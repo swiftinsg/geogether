@@ -7,18 +7,15 @@
 
 import SwiftUI
 
+/// Root screen of the app: the Geography simulation question bank,
+/// split into six topics. Each question is shown on its own page.
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+        TopicListView()
     }
 }
 
 #Preview {
     ContentView()
+        .environmentObject(ProgressStore())
 }
