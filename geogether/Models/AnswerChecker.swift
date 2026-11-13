@@ -13,6 +13,9 @@ enum AnswerChecker {
         case .ordering(_, let correctOrder):
             guard order.count == correctOrder.count else { return false }
             return zip(order, correctOrder).allSatisfy { matches($0, $1) }
+        case .shortAnswer:
+            // Short answers are marked by the learner, not by text comparison.
+            return false
         }
     }
 

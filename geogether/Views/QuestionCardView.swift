@@ -12,11 +12,21 @@ struct QuestionCardView: View {
     private var question: QuizQuestion { session.currentQuestion }
     private var attempt: QuizSession.Attempt { session.currentAttempt }
     private var isChecked: Bool { attempt.status != .unchecked }
+    private var isLocked: Bool { isChecked || attempt.revealed }
 
     var body: some View {
         QuizCard {
             VStack(alignment: .leading, spacing: 16) {
                 header
+
+                if let section = question.section {
+                    Text(section)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(tint)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Capsule().fill(tint.opacity(0.12)))
+                }
 
                 Text(question.prompt)
                     .font(.title3)
@@ -37,6 +47,8 @@ struct QuestionCardView: View {
                     }
                 case .ordering(let options, _):
                     orderingArea(options: options)
+                case .shortAnswer:
+                    writtenAnswerField
                 }
             }
         }
@@ -115,6 +127,31 @@ struct QuestionCardView: View {
         }
     }
 
+    // MARK: - Short answer
+
+    private var writtenAnswerField: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Your answer")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            TextField("Write what you remember, then show the model answer", text: textBinding(0), axis: .vertical)
+                .lineLimit(3...6)
+                .disabled(isLocked)
+                .font(.body)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 13)
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(Color(.tertiarySystemFill))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .strokeBorder(borderColor, lineWidth: 1.5)
+                )
+        }
+    }
+
     private var borderColor: Color {
         switch attempt.status {
         case .unchecked: return Color.primary.opacity(0.08)
@@ -149,36 +186,43 @@ struct QuestionCardView: View {
                 }
             }
 
-            HStack(spacing: 8) {
+            VStack(spacing: 6) {
                 if attempt.order.isEmpty {
                     Text("Tap the options below, smallest first")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, 8)
                 } else {
                     ForEach(Array(attempt.order.enumerated()), id: \.offset) { position, item in
                         Button {
                             session.toggleOrderingOption(item)
                         } label: {
-                            HStack(spacing: 6) {
-                                Text("\(position + 1)")
-                                    .font(.caption2.weight(.bold))
-                                    .foregroundStyle(tint)
+                            HStack(spacing: 10) {
+                                NumberBadge(number: position + 1, tint: tint)
                                 Text(item)
                                     .font(.subheadline.weight(.semibold))
                                     .foregroundStyle(.primary)
+                                Spacer(minLength: 0)
+                                Image(systemName: "xmark")
+                                    .font(.caption2.weight(.bold))
+                                    .foregroundStyle(.tertiary)
                             }
                             .padding(.horizontal, 10)
-                            .padding(.vertical, 8)
-                            .background(Capsule().fill(tint.opacity(0.15)))
+                            .padding(.vertical, 6)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .fill(tint.opacity(0.10))
+                            )
                         }
                         .buttonStyle(.plain)
                         .disabled(isChecked)
                     }
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(12)
-            .frame(minHeight: 54)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .strokeBorder(
@@ -197,6 +241,7 @@ struct QuestionCardView: View {
                             .font(.subheadline.weight(.semibold))
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 11)
+                            .padding(.horizontal, 6)
                             .background(
                                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                                     .fill(Color(.tertiarySystemFill))

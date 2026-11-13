@@ -1,9 +1,12 @@
 import Combine
 import Foundation
 
-/// Holds the state of one run through a topic: which question is on screen,
-/// what the learner typed, and whether each answer was checked.
+/// Holds the state of one run through a topic: which questions were drawn,
+/// which one is on screen, and what the learner answered.
 final class QuizSession: ObservableObject {
+    /// How many questions a single quiz contains.
+    static let questionsPerQuiz = 10
+
     enum Status: Equatable {
         case unchecked, correct, incorrect
     }
@@ -11,25 +14,35 @@ final class QuizSession: ObservableObject {
     struct Attempt: Equatable {
         var texts: [String] = []
         var order: [String] = []
+        /// True once the model answer of a short-answer question has been shown.
+        var revealed = false
         var status: Status = .unchecked
     }
 
     let topic: QuizTopic
+    /// The questions drawn for this run (a random subset of the topic's bank).
+    @Published private(set) var questions: [QuizQuestion]
     @Published var index: Int = 0
     @Published var attempts: [Attempt]
     @Published var showingResults = false
 
-    init(topic: QuizTopic) {
+    private let questionsToDraw: Int
+
+    init(topic: QuizTopic, questionCount: Int = QuizSession.questionsPerQuiz) {
         self.topic = topic
-        self.attempts = Self.freshAttempts(for: topic)
+        self.questionsToDraw = questionCount
+        let drawn = Self.draw(from: topic.questions, count: questionCount)
+        self.questions = drawn
+        self.attempts = Self.freshAttempts(for: drawn)
     }
 
-    var currentQuestion: QuizQuestion { topic.questions[index] }
+    var currentQuestion: QuizQuestion { questions[index] }
     var currentAttempt: Attempt { attempts[index] }
     var score: Int { attempts.filter { $0.status == .correct }.count }
-    var isLastQuestion: Bool { index == topic.questions.count - 1 }
+    var isLastQuestion: Bool { index == questions.count - 1 }
 
     /// The Check button is only enabled once every blank / slot is filled in.
+    /// Short-answer questions can always be revealed.
     var canCheck: Bool {
         guard currentAttempt.status == .unchecked else { return false }
         switch currentQuestion.kind {
@@ -40,16 +53,31 @@ final class QuizSession: ObservableObject {
             }
         case .ordering(let options, _):
             return currentAttempt.order.count == options.count
+        case .shortAnswer:
+            return !currentAttempt.revealed
         }
     }
 
     func checkCurrent() {
         guard canCheck else { return }
+        guard currentQuestion.modelAnswer == nil else { return }
         let correct = AnswerChecker.isCorrect(
             question: currentQuestion,
             texts: currentAttempt.texts,
             order: currentAttempt.order
         )
+        updateCurrent { $0.status = correct ? .correct : .incorrect }
+    }
+
+    /// Shows the model answer of a short-answer question.
+    func revealAnswer() {
+        guard currentQuestion.modelAnswer != nil, currentAttempt.status == .unchecked else { return }
+        updateCurrent { $0.revealed = true }
+    }
+
+    /// Records the learner's own judgement of a short-answer question.
+    func selfMark(_ correct: Bool) {
+        guard currentQuestion.modelAnswer != nil else { return }
         updateCurrent { $0.status = correct ? .correct : .incorrect }
     }
 
@@ -90,8 +118,11 @@ final class QuizSession: ObservableObject {
         index -= 1
     }
 
+    /// Starts a brand new quiz: a fresh random set of questions, shuffled again.
     func restart() {
-        attempts = Self.freshAttempts(for: topic)
+        let drawn = Self.draw(from: topic.questions, count: questionsToDraw)
+        questions = drawn
+        attempts = Self.freshAttempts(for: drawn)
         index = 0
         showingResults = false
     }
@@ -101,7 +132,7 @@ final class QuizSession: ObservableObject {
 
     func userAnswer(for question: QuizQuestion, attempt: Attempt) -> String {
         switch question.kind {
-        case .fillInTheBlank:
+        case .fillInTheBlank, .shortAnswer:
             let filled = attempt.texts
                 .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
                 .filter { !$0.isEmpty }
@@ -111,19 +142,51 @@ final class QuizSession: ObservableObject {
         }
     }
 
+    // MARK: - Drawing random questions
+
+    /// Picks `count` questions at random and shuffles their order.
+    nonisolated private static func draw(from pool: [QuizQuestion], count: Int) -> [QuizQuestion] {
+        pool.shuffled().prefix(count).map(shufflingOptions)
+    }
+
+    /// For ordering questions, the options are shuffled too so the correct
+    /// sequence is never in a predictable place.
+    nonisolated private static func shufflingOptions(_ question: QuizQuestion) -> QuizQuestion {
+        guard case .ordering(let options, let correctOrder) = question.kind, options.count > 1 else {
+            return question
+        }
+
+        var shuffled = options.shuffled()
+        var guardCount = 0
+        while shuffled == correctOrder && guardCount < 20 {
+            shuffled = options.shuffled()
+            guardCount += 1
+        }
+
+        return QuizQuestion(
+            id: question.id,
+            section: question.section,
+            prompt: question.prompt,
+            hint: question.hint,
+            kind: .ordering(options: shuffled, correctOrder: correctOrder)
+        )
+    }
+
     private func updateCurrent(_ change: (inout Attempt) -> Void) {
         var attempt = attempts[index]
         change(&attempt)
         attempts[index] = attempt
     }
 
-    private static func freshAttempts(for topic: QuizTopic) -> [Attempt] {
-        topic.questions.map { question in
+    private static func freshAttempts(for questions: [QuizQuestion]) -> [Attempt] {
+        questions.map { question in
             switch question.kind {
             case .fillInTheBlank(let blanks):
                 return Attempt(texts: Array(repeating: "", count: blanks.count))
             case .ordering:
                 return Attempt()
+            case .shortAnswer:
+                return Attempt(texts: [""])
             }
         }
     }

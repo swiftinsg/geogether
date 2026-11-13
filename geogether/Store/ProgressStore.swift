@@ -29,10 +29,10 @@ final class ProgressStore: ObservableObject {
         return Double(record.bestScore) / Double(record.total)
     }
 
-    func recordResult(for topic: QuizTopic, score: Int) {
-        var record = records[topic.id] ?? Record(bestScore: 0, total: topic.questions.count, attempts: 0)
+    func recordResult(for topic: QuizTopic, score: Int, total: Int) {
+        var record = records[topic.id] ?? Record(bestScore: 0, total: total, attempts: 0)
         record.bestScore = max(record.bestScore, score)
-        record.total = topic.questions.count
+        record.total = total
         record.attempts += 1
         records[topic.id] = record
         save()

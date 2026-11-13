@@ -19,6 +19,7 @@ struct QuizView: View {
             if session.showingResults {
                 ResultsView(
                     topic: topic,
+                    questions: session.questions,
                     score: session.score,
                     attempts: session.attempts,
                     onRetry: { session.restart() }
@@ -32,7 +33,7 @@ struct QuizView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: session.showingResults) { _, showing in
             if showing {
-                progress.recordResult(for: topic, score: session.score)
+                progress.recordResult(for: topic, score: session.score, total: session.questions.count)
             }
         }
         .toolbar {
@@ -53,19 +54,25 @@ struct QuizView: View {
                 QuestionCardView(
                     session: session,
                     tint: topic.tint.color,
-                    onSubmit: checkIfReady
+                    onSubmit: submitFromKeyboard
                 )
+
+                if awaitingSelfMark, let modelAnswer = session.currentQuestion.modelAnswer {
+                    ModelAnswerCard(modelAnswer: modelAnswer, tint: topic.tint.color)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                }
 
                 if session.currentAttempt.status != .unchecked {
                     FeedbackView(
                         question: session.currentQuestion,
                         status: session.currentAttempt.status,
-                        userAnswer: session.currentUserAnswer
+                        userAnswer: session.currentUserAnswer,
+                        modelAnswer: session.currentQuestion.modelAnswer
                     )
                     .transition(.move(edge: .top).combined(with: .opacity))
                 }
 
-                actionButton
+                actionArea
             }
             .padding(.horizontal, 20)
             .padding(.top, 12)
@@ -73,13 +80,14 @@ struct QuizView: View {
         }
         .scrollDismissesKeyboard(.interactively)
         .animation(.snappy, value: session.currentAttempt.status)
+        .animation(.snappy, value: session.currentAttempt.revealed)
         .animation(.snappy, value: session.index)
     }
 
     private var progressHeader: some View {
         VStack(spacing: 10) {
             HStack {
-                Text("Question \(session.index + 1) of \(topic.questions.count)")
+                Text("Question \(session.index + 1) of \(session.questions.count)")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.secondary)
 
@@ -98,12 +106,57 @@ struct QuizView: View {
                 }
             }
 
-            ProgressView(value: Double(session.index + 1), total: Double(topic.questions.count))
+            ProgressView(value: Double(session.index + 1), total: Double(session.questions.count))
                 .tint(topic.tint.color)
         }
     }
 
-    private var actionButton: some View {
+    // MARK: - Buttons
+
+    private var isShortAnswer: Bool { session.currentQuestion.modelAnswer != nil }
+
+    /// A short-answer question whose model answer is showing, waiting to be self-marked.
+    private var awaitingSelfMark: Bool {
+        isShortAnswer && session.currentAttempt.revealed && session.currentAttempt.status == .unchecked
+    }
+
+    @ViewBuilder
+    private var actionArea: some View {
+        if awaitingSelfMark {
+            HStack(spacing: 12) {
+                selfMarkButton(title: "Not quite", symbol: "xmark", tint: .orange, correct: false)
+                selfMarkButton(title: "Got it", symbol: "checkmark", tint: .green, correct: true)
+            }
+            .padding(.top, 2)
+        } else {
+            primaryButton
+        }
+    }
+
+    private func selfMarkButton(title: String, symbol: String, tint: Color, correct: Bool) -> some View {
+        Button {
+            Keyboard.dismiss()
+            withAnimation(.snappy) { session.selfMark(correct) }
+            playHaptic(success: correct)
+        } label: {
+            Label(title, systemImage: symbol)
+                .font(.headline)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(tint.opacity(0.15))
+                )
+                .foregroundStyle(tint)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .strokeBorder(tint.opacity(0.35), lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var primaryButton: some View {
         Button(action: primaryAction) {
             Text(primaryButtonTitle)
                 .font(.headline)
@@ -127,7 +180,7 @@ struct QuizView: View {
 
     private var primaryButtonTitle: String {
         if session.currentAttempt.status == .unchecked {
-            return "Check answer"
+            return isShortAnswer ? "Show answer" : "Check answer"
         }
         return session.isLastQuestion ? "See results" : "Next question"
     }
@@ -135,17 +188,31 @@ struct QuizView: View {
     private func primaryAction() {
         Keyboard.dismiss()
         if session.currentAttempt.status == .unchecked {
-            withAnimation(.snappy) { session.checkCurrent() }
-            playHaptic(success: session.currentAttempt.status == .correct)
+            withAnimation(.snappy) {
+                if isShortAnswer {
+                    session.revealAnswer()
+                } else {
+                    session.checkCurrent()
+                }
+            }
+            if !isShortAnswer {
+                playHaptic(success: session.currentAttempt.status == .correct)
+            }
         } else {
             withAnimation(.snappy) { session.next() }
         }
     }
 
-    private func checkIfReady() {
+    private func submitFromKeyboard() {
         guard session.canCheck else { return }
-        withAnimation(.snappy) { session.checkCurrent() }
-        playHaptic(success: session.currentAttempt.status == .correct)
+        withAnimation(.snappy) {
+            if isShortAnswer {
+                session.revealAnswer()
+            } else {
+                session.checkCurrent()
+                playHaptic(success: session.currentAttempt.status == .correct)
+            }
+        }
     }
 
     private func playHaptic(success: Bool) {
@@ -156,11 +223,46 @@ struct QuizView: View {
     }
 }
 
+/// Reveals the model answer of a short-answer question.
+struct ModelAnswerCard: View {
+    let modelAnswer: String
+    let tint: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label("Model answer", systemImage: "text.book.closed.fill")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(tint)
+
+            Text(modelAnswer)
+                .font(.subheadline)
+                .lineSpacing(4)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text("Mark yourself honestly using the buttons below.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(tint.opacity(0.12))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .strokeBorder(tint.opacity(0.25), lineWidth: 1)
+        )
+        .accessibilityElement(children: .combine)
+    }
+}
+
 /// The green / orange banner shown after a question is checked.
 struct FeedbackView: View {
     let question: QuizQuestion
     let status: QuizSession.Status
     let userAnswer: String
+    var modelAnswer: String?
 
     private var isCorrect: Bool { status == .correct }
     private var tint: Color { isCorrect ? .green : .orange }
@@ -177,9 +279,15 @@ struct FeedbackView: View {
                     .foregroundStyle(tint)
 
                 if isCorrect {
-                    Text("Well done — that's the right answer.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    if let modelAnswer {
+                        Text("Model answer: \(modelAnswer)")
+                            .font(.subheadline)
+                            .foregroundStyle(.primary)
+                    } else {
+                        Text("Well done — that's the right answer.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
                 } else {
                     Text("Correct answer: \(question.answerSummary)")
                         .font(.subheadline)

@@ -22,7 +22,7 @@ struct TopicListView: View {
                         }
                     }
 
-                    Text("One question per page. Tap Check answer to mark each question, then review your score at the end.")
+                    Text("Each quiz picks \(QuizSession.questionsPerQuiz) random questions from the topic, in a random order — so no two quizzes are the same.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -51,7 +51,7 @@ struct TopicListView: View {
 
             HStack(spacing: 14) {
                 Label("\(topics.count) topics", systemImage: "square.stack.3d.up.fill")
-                Label("\(totalQuestions) questions", systemImage: "questionmark.circle.fill")
+                Label("\(totalQuestions) questions in the bank", systemImage: "questionmark.circle.fill")
             }
             .font(.footnote.weight(.semibold))
             .foregroundStyle(.secondary)
@@ -65,6 +65,14 @@ struct TopicListView: View {
 private struct TopicCard: View {
     let topic: QuizTopic
     let record: ProgressStore.Record?
+
+    private var quizSize: Int { min(QuizSession.questionsPerQuiz, topic.questions.count) }
+
+    private var quizDescription: String {
+        topic.questions.count > quizSize
+            ? "\(quizSize) random of \(topic.questions.count) questions"
+            : "\(quizSize) questions"
+    }
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
@@ -87,7 +95,7 @@ private struct TopicCard: View {
                     .foregroundStyle(.secondary)
 
                 HStack(spacing: 10) {
-                    Text("\(topic.questions.count) questions")
+                    Text(quizDescription)
                     if let record, record.total > 0 {
                         Text("Best \(record.bestScore)/\(record.total)")
                             .foregroundStyle(topic.tint.color)

@@ -3,13 +3,14 @@ import SwiftUI
 /// Shown after the last question: score, message and a full review.
 struct ResultsView: View {
     let topic: QuizTopic
+    let questions: [QuizQuestion]
     let score: Int
     let attempts: [QuizSession.Attempt]
     let onRetry: () -> Void
 
     @Environment(\.dismiss) private var dismiss
 
-    private var total: Int { topic.questions.count }
+    private var total: Int { questions.count }
     private var fraction: Double { total == 0 ? 0 : Double(score) / Double(total) }
 
     var body: some View {
@@ -74,14 +75,14 @@ struct ResultsView: View {
                     .font(.headline)
                     .padding(.bottom, 14)
 
-                ForEach(Array(topic.questions.enumerated()), id: \.element.id) { index, question in
+                ForEach(Array(questions.enumerated()), id: \.element.id) { index, question in
                     ReviewRow(
                         number: index + 1,
                         question: question,
                         attempt: attempts.indices.contains(index) ? attempts[index] : QuizSession.Attempt()
                     )
 
-                    if index < topic.questions.count - 1 {
+                    if index < questions.count - 1 {
                         Divider().padding(.vertical, 12)
                     }
                 }
@@ -139,7 +140,7 @@ private struct ReviewRow: View {
 
     private var userAnswer: String {
         switch question.kind {
-        case .fillInTheBlank:
+        case .fillInTheBlank, .shortAnswer:
             return attempt.texts
                 .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
                 .filter { !$0.isEmpty }

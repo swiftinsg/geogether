@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// A group of related questions, e.g. "Housing" or "Mangrove ecosystems".
+/// A group of related questions, e.g. "Urban studies" or "Tropical rainforests".
 struct QuizTopic: Identifiable, Hashable {
     let id: String
     let title: String
@@ -31,13 +31,17 @@ enum TopicTint: String, Hashable {
 /// A single question. Every question is shown on its own page.
 struct QuizQuestion: Identifiable, Hashable {
     enum Kind: Hashable {
-        /// One or more "fill in the blank" answers.
+        /// One or more "fill in the blank" answers, marked automatically.
         case fillInTheBlank([Blank])
-        /// Put a set of options into the correct order.
+        /// Put a set of options into the correct order, marked automatically.
         case ordering(options: [String], correctOrder: [String])
+        /// A written answer revealed and marked by the learner themselves.
+        case shortAnswer(modelAnswer: String)
     }
 
     let id: String
+    /// Optional sub-heading inside a topic, e.g. "A. Settlements and settlement hierarchy".
+    let section: String?
     let prompt: String
     let hint: String?
     let kind: Kind
@@ -48,12 +52,20 @@ struct QuizQuestion: Identifiable, Hashable {
             return blanks.count == 1 ? "Fill in the blank" : "Fill in both blanks"
         case .ordering:
             return "Put these in the correct order"
+        case .shortAnswer:
+            return "Answer in your own words"
         }
     }
 
     var blanks: [Blank] {
         if case .fillInTheBlank(let blanks) = kind { return blanks }
         return []
+    }
+
+    /// Present for `.shortAnswer` questions only.
+    var modelAnswer: String? {
+        if case .shortAnswer(let answer) = kind { return answer }
+        return nil
     }
 
     /// The answer key used when revealing the correct answer.
@@ -63,6 +75,8 @@ struct QuizQuestion: Identifiable, Hashable {
             return blanks.map(\.display).joined(separator: ", ")
         case .ordering(_, let correctOrder):
             return correctOrder.joined(separator: " → ")
+        case .shortAnswer(let modelAnswer):
+            return modelAnswer
         }
     }
 }
