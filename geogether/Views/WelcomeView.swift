@@ -54,6 +54,8 @@ struct WelcomeView: View {
                 .scaleEffect(showTitle ? 1 : 0.3)
                 .opacity(showTitle ? 1 : 0)
                 .offset(y: showTitle ? 0 : 40)
+                .contentShape(Rectangle())
+                .onTapGesture(perform: replayAnimation)
 
                 Spacer()
 
@@ -76,8 +78,6 @@ struct WelcomeView: View {
                 .offset(y: showButton ? 0 : 30)
                 .padding(.bottom, 50)
             }
-            .contentShape(Rectangle())
-            .onTapGesture(perform: replayAnimation)
             .onAppear(perform: startAnimation)
         }
     }
