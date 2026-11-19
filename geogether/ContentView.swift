@@ -7,11 +7,10 @@
 
 import SwiftUI
 
-/// Root screen of the app: the Geography simulation question bank,
-/// split into six topics. Each question is shown on its own page.
+/// Root screen of the app.
 struct ContentView: View {
     var body: some View {
-        TopicListView()
+        WelcomeView()
     }
 }
 

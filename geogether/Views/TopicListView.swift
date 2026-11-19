@@ -3,6 +3,11 @@ import SwiftUI
 /// Home screen: the question bank split into its six topics.
 struct TopicListView: View {
     @EnvironmentObject private var progress: ProgressStore
+    var onBack: (() -> Void)?
+
+    init(onBack: (() -> Void)? = nil) {
+        self.onBack = onBack
+    }
 
     private var topics: [QuizTopic] { QuestionBank.topics }
     private var totalQuestions: Int { topics.reduce(0) { $0 + $1.questions.count } }
@@ -15,10 +20,29 @@ struct TopicListView: View {
 
                     VStack(spacing: 14) {
                         ForEach(topics) { topic in
-                            NavigationLink(value: topic) {
-                                TopicCard(topic: topic, record: progress.records[topic.id])
+                            VStack(spacing: 0) {
+                                NavigationLink(value: topic) {
+                                    TopicCard(topic: topic, record: progress.records[topic.id])
+                                }
+                                .buttonStyle(.plain)
+
+                                if let lesson = lessonDestination(for: topic) {
+                                    NavigationLink(value: lesson) {
+                                        Label("Explore interactive lesson", systemImage: "sparkles")
+                                            .font(.subheadline.weight(.semibold))
+                                            .foregroundStyle(topic.tint.color)
+                                            .frame(maxWidth: .infinity)
+                                            .padding(.vertical, 11)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                                    .fill(topic.tint.softColor)
+                                            )
+                                    }
+                                    .buttonStyle(.plain)
+                                    .padding(.top, -7)
+                                    .padding(.horizontal, 14)
+                                }
                             }
-                            .buttonStyle(.plain)
                         }
                     }
 
@@ -33,19 +57,45 @@ struct TopicListView: View {
                 .padding(.top, 12)
                 .padding(.bottom, 32)
             }
-            .background(AppBackground())
+            .background(AnimatedOceanBackground())
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                if let onBack {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(action: onBack) {
+                            Label("Back", systemImage: "chevron.left")
+                        }
+                    }
+                }
+            }
             .navigationDestination(for: QuizTopic.self) { topic in
                 QuizView(topic: topic)
             }
+            .navigationDestination(for: LessonDestination.self) { lesson in
+                switch lesson {
+                case .urbanAndRural:
+                    HousingCompareView()
+                case .waterCycle:
+                    WaterCycleView()
+                }
+            }
+        }
+    }
+
+    private func lessonDestination(for topic: QuizTopic) -> LessonDestination? {
+        switch topic.id {
+        case "urban-studies": return .urbanAndRural
+        case "hydrological-cycle": return .waterCycle
+        default: return nil
         }
     }
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Geography")
+            Text("Choose a topic")
                 .font(.system(size: 38, weight: .bold, design: .rounded))
-            Text("Simulation question bank")
+                .foregroundStyle(AppPalette.navy)
+            Text("Explore an interactive lesson or test what you know.")
                 .font(.title3)
                 .foregroundStyle(.secondary)
 
@@ -114,10 +164,18 @@ private struct TopicCard: View {
 
             Spacer(minLength: 4)
 
-            Image(systemName: "chevron.right")
-                .font(.footnote.weight(.bold))
-                .foregroundStyle(.tertiary)
-                .padding(.top, 18)
+            VStack(spacing: 10) {
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.bold))
+                    .foregroundStyle(.tertiary)
+
+                if topic.id == "urban-studies" || topic.id == "hydrological-cycle" {
+                    Text("Quiz")
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(topic.tint.color)
+                }
+            }
+            .padding(.top, 18)
         }
         .padding(18)
         .background(
@@ -131,7 +189,13 @@ private struct TopicCard: View {
         .shadow(color: .black.opacity(0.05), radius: 18, y: 8)
         .contentShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
         .accessibilityElement(children: .combine)
+
     }
+}
+
+private enum LessonDestination: Hashable {
+    case urbanAndRural
+    case waterCycle
 }
 
 #Preview {
