@@ -1,331 +1,595 @@
 import SwiftUI
 
-/// Animated water-cycle lesson adapted from the `kudasyroba` prototype.
 struct WaterCycleView: View {
-    private enum Mode: String, CaseIterable, Identifiable {
-        case animate = "Animate"
-        case scrub = "Slider"
+    @Environment(\.dismiss) private var dismiss
+    @State private var engine = WaterCycleEngine()
+    @State private var showProcessPopup = true
 
-        var id: Self { self }
+    private var phases: [WaterCycleEngine.Phase] {
+        Array(WaterCycleEngine.Phase.allCases)
     }
 
-    @State private var mode = Mode.animate
-    @State private var scrub = 0.0
-    @State private var startDate = Date()
+    private var currentPhaseIndex: Int {
+        phases.firstIndex(of: engine.phase) ?? 0
+    }
 
-    private let transferColor = Color(red: 0.98, green: 0.45, blue: 0.52)
-    private let storeColor = Color(red: 0.45, green: 0.90, blue: 0.95)
+    private var canGoPrevious: Bool {
+        currentPhaseIndex > 0
+    }
+
+    private var nextPhase: WaterCycleEngine.Phase? {
+        let nextIndex = currentPhaseIndex + 1
+        guard phases.indices.contains(nextIndex) else { return nil }
+        return phases[nextIndex]
+    }
+
+    private var previousPhase: WaterCycleEngine.Phase? {
+        let prevIndex = currentPhaseIndex - 1
+        guard phases.indices.contains(prevIndex) else { return nil }
+        return phases[prevIndex]
+    }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                Picker("Playback mode", selection: $mode) {
-                    ForEach(Mode.allCases) { mode in
-                        Text(mode.rawValue).tag(mode)
-                    }
-                }
-                .pickerStyle(.segmented)
+        VStack(spacing: 0) {
+            header
+            Divider()
+            simulationStage
+        }
+        .background(Color(red: 0.91, green: 0.97, blue: 1))
+        .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
+        .onChange(of: engine.phase) { _ in
+            showProcessPopup = true
+        }
+    }
 
-                GeometryReader { geometry in
-                    TimelineView(.animation) { timeline in
-                        let phase = mode == .animate
-                            ? cycleFraction(timeline.date.timeIntervalSince(startDate) / 14)
-                            : scrub
-                        WaterCycleScene(
-                            phase: phase,
-                            size: geometry.size,
-                            transferColor: transferColor,
-                            storeColor: storeColor
-                        )
-                    }
-                }
-                .frame(height: 430)
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
-
-                if mode == .scrub {
-                    VStack(spacing: 5) {
-                        Slider(value: $scrub, in: 0...1)
-                        HStack {
-                            Text("Evaporation")
-                            Spacer()
-                            Text("Rain")
-                            Spacer()
-                            Text("Flow")
-                        }
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    }
-                }
-
-                TimelineView(.periodic(from: .now, by: 0.25)) { timeline in
-                    let phase = mode == .animate
-                        ? cycleFraction(timeline.date.timeIntervalSince(startDate) / 14)
-                        : scrub
-                    StageCard(stage: WaterCycleStage.stage(for: phase), tint: transferColor)
-                }
-
-                ViewThatFits(in: .horizontal) {
-                    HStack(alignment: .top, spacing: 12) { keyCards }
-                    VStack(spacing: 12) { keyCards }
-                }
+    private var header: some View {
+        HStack(spacing: 12) {
+            Button(action: { dismiss() }) {
+                Image(systemName: "chevron.left")
+                    .font(.headline.weight(.bold))
+                    .frame(width: 38, height: 38)
+                    .background(Circle().fill(.white.opacity(0.88)))
             }
-            .padding(20)
+            .accessibilityLabel("Back")
+
+            Text("Water distribution")
+                .font(.system(.title3, design: .rounded).weight(.bold))
+                .foregroundStyle(AppPalette.navy)
+
+            Spacer()
+
+            Text("\(engine.particleCount) drops")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(AppPalette.navy.opacity(0.72))
         }
-        .background(AnimatedOceanBackground())
-        .navigationTitle("The water cycle")
-        .navigationBarTitleDisplayMode(.inline)
-        .onChange(of: mode) { _, newMode in
-            if newMode == .animate { startDate = Date() }
-        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
     }
 
-    @ViewBuilder
-    private var keyCards: some View {
-        WaterCycleKeyCard(
-            title: "Transfers",
-            color: transferColor,
-            items: ["Evaporation", "Condensation", "Precipitation", "Infiltration", "Groundwater flow"]
-        )
-        WaterCycleKeyCard(
-            title: "Stores",
-            color: storeColor,
-            items: ["Atmosphere", "Snow and ice", "Lake", "Sea", "Aquifer"]
-        )
-    }
-}
-
-private struct WaterCycleScene: View {
-    let phase: Double
-    let size: CGSize
-    let transferColor: Color
-    let storeColor: Color
-
-    private var raining: Bool { (0.42...0.72).contains(phase) }
-    private var flowStrength: Double { smoothStep(phase, from: 0.70, to: 1) }
-
-    var body: some View {
-        let width = size.width
-        let height = size.height
-
-        ZStack {
-            LinearGradient(
-                colors: [Color(red: 0.62, green: 0.85, blue: 0.99), Color(red: 0.90, green: 0.97, blue: 1)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-
-            Circle()
-                .fill(.yellow)
-                .frame(width: 46, height: 46)
-                .shadow(color: .yellow.opacity(0.6), radius: 12)
-                .position(x: width * 0.86, y: height * 0.12)
-
-            Rectangle()
-                .fill(Color(red: 0.55, green: 0.45, blue: 0.35))
-                .frame(width: width, height: height * 0.26)
-                .position(x: width / 2, y: height * 0.87)
-            Rectangle()
-                .fill(Color(red: 0.85, green: 0.78, blue: 0.62))
-                .frame(width: width, height: height * 0.09)
-                .position(x: width / 2, y: height * 0.90)
-
-            mountain(width: width, height: height)
-
-            Ellipse()
-                .fill(Color(red: 0.35, green: 0.72, blue: 0.35))
-                .frame(width: width * 1.25, height: height * 0.52)
-                .position(x: width * 0.78, y: height * 0.88)
-
-            RoundedRectangle(cornerRadius: 10)
-                .fill(
-                    LinearGradient(
-                        colors: [Color(red: 0.40, green: 0.85, blue: 0.95), Color(red: 0.15, green: 0.65, blue: 0.90)],
-                        startPoint: .top,
-                        endPoint: .bottom
+    private var simulationStage: some View {
+        TimelineView(.animation(minimumInterval: 1 / 30, paused: !engine.isPlaying)) { timeline in
+            ZStack {
+                Canvas(opaque: true, colorMode: .linear, rendersAsynchronously: false) { context, size in
+                    WaterCycleRenderer.draw(
+                        context: &context,
+                        size: size,
+                        particles: engine.particles,
+                        cloudMoisture: engine.cloudMoisture,
+                        phase: engine.phase,
+                        time: timeline.date.timeIntervalSinceReferenceDate
                     )
-                )
-                .frame(width: width * 0.42, height: height * 0.10)
-                .position(x: width * 0.79, y: height * 0.695)
+                }
+                .onChange(of: timeline.date) { date in
+                    engine.advance(to: date)
+                }
+                .onAppear {
+                    engine.advance(to: timeline.date)
+                }
 
-            storeLabel("SEA", x: width * 0.79, y: height * 0.695)
-            storeLabel("AQUIFER", x: width * 0.14, y: height * 0.90)
+                VStack(spacing: 8) {
+                    HStack {
+                        phasePill
+                        Spacer()
+                    }
 
-            Ellipse()
-                .fill(storeColor)
-                .frame(width: width * 0.17, height: height * 0.04)
-                .position(x: width * 0.40, y: height * 0.625)
+                    Spacer()
 
-            Image(systemName: "tree.fill")
-                .font(.system(size: 42))
-                .foregroundStyle(Color(red: 0.10, green: 0.50, blue: 0.22))
-                .position(x: width * 0.56, y: height * 0.545)
-            Image(systemName: "tree.fill")
-                .font(.system(size: 32))
-                .foregroundStyle(Color(red: 0.15, green: 0.58, blue: 0.28))
-                .position(x: width * 0.65, y: height * 0.60)
+                    if showProcessPopup {
+                        processPopupCard
+                            .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    }
 
-            vapour(width: width, height: height)
-            cloud(width: width, height: height)
-            rain(width: width, height: height)
-            groundwater(width: width, height: height)
-
-            Label(WaterCycleStage.stage(for: phase).name.uppercased(), systemImage: "arrow.triangle.2.circlepath")
-                .font(.caption2.weight(.bold))
-                .foregroundStyle(Color(red: 0.55, green: 0.15, blue: 0.20))
-                .padding(.horizontal, 9)
-                .padding(.vertical, 5)
-                .background(Capsule().fill(.white.opacity(0.88)))
-                .position(x: width * 0.24, y: height * 0.055)
+                    phaseButtons
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+            }
         }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Animated water cycle diagram")
-        .accessibilityValue(WaterCycleStage.stage(for: phase).detail)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Water cycle simulation")
+        .accessibilityValue(engine.phase.numberedTitle)
     }
 
-    private func mountain(width: CGFloat, height: CGFloat) -> some View {
-        Path { path in
-            path.move(to: CGPoint(x: -10, y: height * 0.64))
-            path.addLine(to: CGPoint(x: width * 0.22, y: height * 0.24))
-            path.addLine(to: CGPoint(x: width * 0.46, y: height * 0.64))
-            path.closeSubpath()
-        }
-        .fill(Color(red: 0.25, green: 0.65, blue: 0.30))
-    }
-
-    private func cloud(width: CGFloat, height: CGFloat) -> some View {
-        let condensation = smoothStep(phase, from: 0.18, to: 0.40) * (1 - smoothStep(phase, from: 0.45, to: 0.60))
-        return ZStack {
-            Image(systemName: "cloud.fill").font(.system(size: 92))
-            Image(systemName: "cloud.fill").font(.system(size: 62)).offset(x: -58, y: 12)
-            Image(systemName: "cloud.fill").font(.system(size: 56)).offset(x: 60, y: 14)
-        }
-        .foregroundStyle(.white)
-        .shadow(color: .gray.opacity(0.25), radius: 6, y: 3)
-        .scaleEffect(0.85 + condensation * 0.35)
-        .position(x: width * 0.30, y: height * 0.15)
-    }
-
-    @ViewBuilder
-    private func vapour(width: CGFloat, height: CGFloat) -> some View {
-        ForEach(0..<7, id: \.self) { index in
-            let seed = cycleFraction(sin(Double(index) * 12.9898) * 43758.5453)
-            let progress = cycleFraction(phase * 2.5 + seed * 5)
-            Circle()
-                .fill(.white.opacity(0.75 * (1 - progress)))
-                .frame(width: 7 + seed * 8, height: 7 + seed * 8)
-                .position(x: width * (0.62 + seed * 0.33), y: height * (0.65 - progress * 0.33))
-        }
-    }
-
-    @ViewBuilder
-    private func rain(width: CGFloat, height: CGFloat) -> some View {
-        if raining {
-            ForEach(0..<26, id: \.self) { index in
-                let seed = cycleFraction(sin(Double(index) * 12.9898) * 43758.5453)
-                let progress = cycleFraction(phase * 2.4 + seed * 7)
+    private var phasePill: some View {
+        Button {
+            withAnimation(.snappy(duration: 0.22)) {
+                showProcessPopup.toggle()
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Label(engine.phase.numberedTitle, systemImage: phaseSymbol)
+                    .font(.caption.weight(.bold))
+                Image(systemName: showProcessPopup ? "info.circle.fill" : "info.circle")
+                    .font(.caption2.weight(.semibold))
+                    .opacity(0.85)
+            }
+            .foregroundStyle(.white)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
+            .background(
                 Capsule()
-                    .fill(Color.blue.opacity(0.75))
-                    .frame(width: 2.5, height: 12)
-                    .position(
-                        x: width * (0.13 + seed * 0.34),
-                        y: height * (0.24 + progress * (0.46 + seed * 0.17 - 0.24))
-                    )
-            }
+                    .fill(AppPalette.navy.opacity(0.9))
+                    .shadow(color: .black.opacity(0.14), radius: 8, y: 3)
+            )
+            .contentTransition(.numericText())
+            .animation(.snappy, value: engine.phase)
         }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(engine.phase.numberedTitle), \(showProcessPopup ? "hide" : "show") explanation")
     }
 
-    @ViewBuilder
-    private func groundwater(width: CGFloat, height: CGFloat) -> some View {
-        ForEach(0..<4, id: \.self) { index in
-            let progress = cycleFraction(flowStrength * 1.2 + Double(index) * 0.25)
-            Circle()
-                .fill(Color.blue.opacity(phase > 0.68 ? 0.9 : 0.15))
-                .frame(width: 7, height: 7)
-                .position(x: width * (0.08 + progress * 0.80), y: height * 0.90)
-        }
-    }
+    private var processPopupCard: some View {
+        VStack(alignment: .leading, spacing: 7) {
+            HStack(alignment: .center, spacing: 8) {
+                Text("Step \(currentPhaseIndex + 1)/\(phases.count)")
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(Capsule().fill(AppPalette.navy))
 
-    private func storeLabel(_ text: String, x: CGFloat, y: CGFloat) -> some View {
-        Text(text)
-            .font(.system(size: 9, weight: .bold))
-            .foregroundStyle(AppPalette.navy)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 2)
-            .background(RoundedRectangle(cornerRadius: 4).fill(storeColor))
-            .position(x: x, y: y)
-    }
-
-    private func smoothStep(_ value: Double, from start: Double, to end: Double) -> Double {
-        min(max((value - start) / (end - start), 0), 1)
-    }
-}
-
-private struct WaterCycleStage {
-    let name: String
-    let detail: String
-
-    static func stage(for phase: Double) -> Self {
-        switch phase {
-        case ..<0.25:
-            return Self(name: "Evaporation", detail: "The sun heats water in the sea, lakes and land. Water vapour rises into the atmosphere.")
-        case ..<0.45:
-            return Self(name: "Condensation", detail: "Water vapour cools and condenses into tiny droplets that form clouds.")
-        case ..<0.72:
-            return Self(name: "Precipitation", detail: "Water droplets join and fall to Earth as rain, snow or ice.")
-        default:
-            return Self(name: "Flow and storage", detail: "Water flows over land or soaks into the ground before returning to lakes and seas.")
-        }
-    }
-}
-
-private struct StageCard: View {
-    let stage: WaterCycleStage
-    let tint: Color
-
-    var body: some View {
-        QuizCard {
-            VStack(alignment: .leading, spacing: 7) {
-                Label(stage.name, systemImage: "drop.fill")
-                    .font(.headline)
+                Text(engine.phase.popupTitle)
+                    .font(.subheadline.weight(.bold))
                     .foregroundStyle(AppPalette.navy)
-                Text(stage.detail)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-        }
-    }
-}
 
-private struct WaterCycleKeyCard: View {
-    let title: String
-    let color: Color
-    let items: [String]
+                Spacer()
 
-    var body: some View {
-        QuizCard {
-            VStack(alignment: .leading, spacing: 6) {
-                Label(title, systemImage: title == "Stores" ? "archivebox.fill" : "arrow.right")
-                    .font(.headline)
-                    .foregroundStyle(AppPalette.navy)
-                ForEach(items, id: \.self) { item in
-                    Text(item)
-                        .font(.caption)
+                Button {
+                    withAnimation(.snappy(duration: 0.2)) {
+                        showProcessPopup = false
+                    }
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.caption2.weight(.bold))
                         .foregroundStyle(.secondary)
+                        .frame(width: 24, height: 24)
+                        .background(Circle().fill(.black.opacity(0.06)))
                 }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Dismiss explanation")
+            }
+
+            Text(engine.phase.explanation)
+                .font(.caption)
+                .foregroundStyle(.primary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            HStack(spacing: 8) {
+                Button {
+                    goToPreviousProcess()
+                } label: {
+                    Label("Previous", systemImage: "chevron.left")
+                        .font(.caption2.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .fill(canGoPrevious ? Color.white.opacity(0.88) : Color.white.opacity(0.38))
+                        )
+                        .foregroundStyle(canGoPrevious ? AppPalette.navy : .secondary)
+                }
+                .buttonStyle(.plain)
+                .disabled(!canGoPrevious)
+
+                Button {
+                    continueToNextProcess()
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(nextPhase != nil ? "Continue" : "Restart")
+                        Image(systemName: nextPhase != nil ? "chevron.right" : "arrow.counterclockwise")
+                    }
+                    .font(.caption2.weight(.bold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 6)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .fill(AppPalette.navy)
+                    )
+                    .foregroundStyle(.white)
+                }
+                .buttonStyle(.plain)
             }
         }
-        .overlay(alignment: .topTrailing) {
-            RoundedRectangle(cornerRadius: 4)
-                .fill(color)
-                .frame(width: 16, height: 16)
-                .padding(16)
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(.white.opacity(0.65), lineWidth: 1)
+                )
+                .shadow(color: .black.opacity(0.14), radius: 10, y: 4)
+        )
+    }
+
+    private var phaseButtons: some View {
+        HStack(spacing: 6) {
+            ForEach(WaterCycleEngine.Phase.allCases) { phase in
+                Button {
+                    engine.jump(to: phase)
+                    withAnimation(.snappy(duration: 0.22)) {
+                        showProcessPopup = true
+                    }
+                } label: {
+                    Text("\(phase.rawValue + 1)")
+                        .font(.caption2.weight(.bold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 7)
+                        .background(Capsule().fill(engine.phase == phase ? .white : .white.opacity(0.62)))
+                        .foregroundStyle(engine.phase == phase ? AppPalette.navy : .secondary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(phase.numberedTitle)
+                .accessibilityHint("Jump to this stage")
+            }
+        }
+        .padding(5)
+        .background(.ultraThinMaterial, in: Capsule())
+    }
+
+    private func goToPreviousProcess() {
+        guard let previousPhase else { return }
+        engine.jump(to: previousPhase)
+        withAnimation(.snappy(duration: 0.22)) {
+            showProcessPopup = true
+        }
+    }
+
+    private func continueToNextProcess() {
+        if let nextPhase {
+            engine.jump(to: nextPhase)
+        } else if let firstPhase = phases.first {
+            engine.jump(to: firstPhase)
+        }
+        withAnimation(.snappy(duration: 0.22)) {
+            showProcessPopup = true
+        }
+    }
+
+    private var phaseSymbol: String {
+        switch engine.phase {
+        case .evaporation: "arrow.up"
+        case .condensation: "cloud.fill"
+        case .precipitation: "cloud.rain.fill"
+        case .collection: "water.waves"
         }
     }
 }
 
-private func cycleFraction(_ value: Double) -> Double {
-    value - floor(value)
+private extension WaterCycleEngine.Phase {
+    var popupTitle: String {
+        switch self {
+        case .evaporation: "Evaporation"
+        case .condensation: "Condensation"
+        case .precipitation: "Precipitation"
+        case .collection: "Collection & Runoff"
+        }
+    }
+
+    var explanation: String {
+        switch self {
+        case .evaporation:
+            "Heat from the sun warms water in the ocean, turning liquid water into invisible water vapor that rises into the air."
+        case .condensation:
+            "As warm water vapor rises and cools higher in the atmosphere, it gathers around tiny particles to form clouds."
+        case .precipitation:
+            "When cloud droplets grow too heavy to stay suspended in the air, they fall back to land and sea as rain."
+        case .collection:
+            "Rainwater collects in streams and flows across the land as runoff, returning water back to the ocean to repeat the cycle."
+        }
+    }
+}
+
+private enum WaterCycleRenderer {
+    static func draw(
+        context: inout GraphicsContext,
+        size: CGSize,
+        particles: [WaterCycleEngine.Particle],
+        cloudMoisture: CGFloat,
+        phase: WaterCycleEngine.Phase,
+        time: TimeInterval
+    ) {
+        drawSky(context: &context, size: size)
+        drawSun(context: &context, size: size, time: time)
+        drawLand(context: &context, size: size)
+        drawOcean(context: &context, size: size, time: time)
+        drawStream(context: &context, size: size, time: time)
+        drawHeatShimmer(context: &context, size: size, time: time)
+        drawFlowGuides(context: &context, size: size, phase: phase, time: time)
+        drawParticles(context: &context, size: size, particles: particles)
+        drawCloud(context: &context, size: size, moisture: cloudMoisture, time: time)
+    }
+
+    private static func drawSky(context: inout GraphicsContext, size: CGSize) {
+        context.fill(
+            Path(CGRect(origin: .zero, size: size)),
+            with: .linearGradient(
+                Gradient(colors: [
+                    Color(red: 0.47, green: 0.77, blue: 0.98),
+                    Color(red: 0.86, green: 0.95, blue: 1)
+                ]),
+                startPoint: .zero,
+                endPoint: CGPoint(x: 0, y: size.height)
+            )
+        )
+    }
+
+    private static func drawSun(context: inout GraphicsContext, size: CGSize, time: TimeInterval) {
+        let center = point(0.84, 0.16, size)
+        let pulse = CGFloat((sin(time * 2.2) + 1) / 2)
+        let radius = min(size.width, size.height) * (0.055 + pulse * 0.005)
+
+        context.drawLayer { layer in
+            layer.addFilter(.shadow(color: .yellow.opacity(0.65), radius: 18 + pulse * 8))
+            layer.fill(
+                Path(ellipseIn: CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2)),
+                with: .radialGradient(
+                    Gradient(colors: [.white, .yellow, .orange]),
+                    center: center,
+                    startRadius: 0,
+                    endRadius: radius
+                )
+            )
+        }
+
+        var rays = Path()
+        for index in 0..<12 {
+            let angle = CGFloat(index) / 12 * .pi * 2 + CGFloat(time * 0.18)
+            let inner = radius * 1.30
+            let outer = radius * (1.70 + pulse * 0.20)
+            rays.move(to: CGPoint(x: center.x + cos(angle) * inner, y: center.y + sin(angle) * inner))
+            rays.addLine(to: CGPoint(x: center.x + cos(angle) * outer, y: center.y + sin(angle) * outer))
+        }
+        context.stroke(rays, with: .color(.yellow.opacity(0.76)), style: StrokeStyle(lineWidth: 3, lineCap: .round))
+    }
+
+    private static func drawLand(context: inout GraphicsContext, size: CGSize) {
+        var land = Path()
+        land.move(to: CGPoint(x: 0, y: size.height * 0.42))
+        land.addCurve(to: point(0.56, 0.74, size), control1: point(0.18, 0.46, size), control2: point(0.35, 0.68, size))
+        land.addLine(to: CGPoint(x: size.width * 0.64, y: size.height))
+        land.addLine(to: CGPoint(x: 0, y: size.height))
+        land.closeSubpath()
+        context.fill(
+            land,
+            with: .linearGradient(
+                Gradient(colors: [
+                    Color(red: 0.27, green: 0.62, blue: 0.29),
+                    Color(red: 0.56, green: 0.74, blue: 0.32),
+                    Color(red: 0.83, green: 0.71, blue: 0.43)
+                ]),
+                startPoint: point(0.05, 0.42, size),
+                endPoint: point(0.58, 0.92, size)
+            )
+        )
+    }
+
+    private static func drawOcean(context: inout GraphicsContext, size: CGSize, time: TimeInterval) {
+        let surface = size.height * 0.73
+        var ocean = Path()
+        ocean.move(to: CGPoint(x: size.width * 0.50, y: surface))
+        for step in 0...24 {
+            let x = size.width * (0.50 + CGFloat(step) / 48)
+            ocean.addLine(to: CGPoint(x: x, y: surface + sin(CGFloat(step) * 0.95 + CGFloat(time * 2.1)) * 3.5))
+        }
+        ocean.addLine(to: CGPoint(x: size.width, y: size.height))
+        ocean.addLine(to: CGPoint(x: size.width * 0.50, y: size.height))
+        ocean.closeSubpath()
+        context.fill(
+            ocean,
+            with: .linearGradient(
+                Gradient(colors: [
+                    Color(red: 0.03, green: 0.53, blue: 0.84),
+                    Color(red: 0.01, green: 0.24, blue: 0.62),
+                    Color(red: 0.01, green: 0.12, blue: 0.40)
+                ]),
+                startPoint: CGPoint(x: 0, y: surface),
+                endPoint: CGPoint(x: 0, y: size.height)
+            )
+        )
+
+        for band in 0..<4 {
+            var wave = Path()
+            let y = surface + CGFloat(12 + band * 15)
+            wave.move(to: CGPoint(x: size.width * 0.51, y: y))
+            for step in 0...20 {
+                let x = size.width * (0.51 + CGFloat(step) / 40)
+                wave.addLine(to: CGPoint(x: x, y: y + sin(CGFloat(step) * 0.85 + CGFloat(time * 1.8) + CGFloat(band)) * 2.5))
+            }
+            context.stroke(wave, with: .color(.cyan.opacity(0.34)), style: StrokeStyle(lineWidth: 1.4))
+        }
+    }
+
+    private static func drawStream(context: inout GraphicsContext, size: CGSize, time: TimeInterval) {
+        var stream = Path()
+        stream.move(to: point(0.07, 0.49, size))
+        stream.addCurve(to: point(0.31, 0.63, size), control1: point(0.19, 0.50, size), control2: point(0.20, 0.62, size))
+        stream.addCurve(to: point(0.57, 0.75, size), control1: point(0.43, 0.64, size), control2: point(0.45, 0.75, size))
+        context.stroke(
+            stream,
+            with: .color(.cyan.opacity(0.88)),
+            style: StrokeStyle(lineWidth: 7, lineCap: .round, dash: [18, 8], dashPhase: CGFloat(time * -24))
+        )
+        context.stroke(stream, with: .color(.white.opacity(0.50)), style: StrokeStyle(lineWidth: 1.5, lineCap: .round))
+    }
+
+    private static func drawHeatShimmer(context: inout GraphicsContext, size: CGSize, time: TimeInterval) {
+        for index in 0..<5 {
+            var ripple = Path()
+            let x = size.width * (0.67 + CGFloat(index) * 0.055)
+            let y = size.height * (0.68 - CGFloat(index % 2) * 0.025)
+            ripple.move(to: CGPoint(x: x, y: y))
+            ripple.addCurve(
+                to: CGPoint(x: x + 12, y: y - 35),
+                control1: CGPoint(x: x - 9 + sin(CGFloat(time * 2) + CGFloat(index)) * 3, y: y - 12),
+                control2: CGPoint(x: x + 18, y: y - 24)
+            )
+            context.stroke(ripple, with: .color(.white.opacity(0.22)), style: StrokeStyle(lineWidth: 2, lineCap: .round))
+        }
+    }
+
+    private static func drawFlowGuides(
+        context: inout GraphicsContext,
+        size: CGSize,
+        phase: WaterCycleEngine.Phase,
+        time: TimeInterval
+    ) {
+        var evaporation = Path()
+        evaporation.move(to: point(0.76, 0.68, size))
+        evaporation.addCurve(to: point(0.53, 0.31, size), control1: point(0.83, 0.50, size), control2: point(0.70, 0.34, size))
+        context.stroke(
+            evaporation,
+            with: .color(.white.opacity(phase == .evaporation ? 0.88 : 0.34)),
+            style: StrokeStyle(lineWidth: 2, lineCap: .round, dash: [7, 7], dashPhase: CGFloat(time * -18))
+        )
+
+        var returnArrow = Path()
+        returnArrow.move(to: point(0.35, 0.68, size))
+        returnArrow.addCurve(to: point(0.61, 0.75, size), control1: point(0.44, 0.67, size), control2: point(0.50, 0.75, size))
+        returnArrow.addLine(to: point(0.58, 0.72, size))
+        returnArrow.move(to: point(0.61, 0.75, size))
+        returnArrow.addLine(to: point(0.57, 0.77, size))
+        context.stroke(
+            returnArrow,
+            with: .color(.cyan.opacity(phase == .collection ? 0.95 : 0.35)),
+            style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round)
+        )
+    }
+
+    private static func drawParticles(
+        context: inout GraphicsContext,
+        size: CGSize,
+        particles: [WaterCycleEngine.Particle]
+    ) {
+        for particle in particles {
+            switch particle.state {
+            case .sea:
+                guard particle.id % 8 == 0 else { continue }
+                let position = point(0.54 + particle.lane * 0.43, 0.77 + particle.offset * 0.19, size)
+                drawDroplet(context: &context, at: position, radius: 1.5, color: .cyan.opacity(0.34))
+            case .vapor:
+                let start = point(0.66 + particle.lane * 0.29, 0.73 + particle.offset * 0.02, size)
+                let control = point(0.78 - particle.lane * 0.12, 0.34 - particle.offset * 0.06, size)
+                let end = point(0.35 + particle.lane * 0.20, 0.25 + particle.offset * 0.035, size)
+                drawDroplet(
+                    context: &context,
+                    at: quadratic(start, control, end, particle.progress),
+                    radius: 2.2 + particle.offset * 2.2,
+                    color: .white.opacity(0.82)
+                )
+            case .cloud:
+                guard particle.id % 12 == 0 else { continue }
+                let position = point(0.34 + particle.lane * 0.21, 0.19 + particle.offset * 0.12, size)
+                drawDroplet(context: &context, at: position, radius: 1.3, color: .white.opacity(0.50))
+            case .rain:
+                let start = point(0.30 + particle.lane * 0.29, 0.29 + particle.offset * 0.045, size)
+                let endX = particle.lane < 0.68 ? 0.08 + particle.lane * 0.64 : 0.53 + particle.lane * 0.24
+                let position = linear(start, point(endX, 0.72 + particle.offset * 0.10, size), particle.progress)
+                var streak = Path()
+                streak.move(to: CGPoint(x: position.x + 4, y: position.y - 7))
+                streak.addLine(to: CGPoint(x: position.x - 2, y: position.y + 7))
+                context.stroke(streak, with: .color(.cyan.opacity(0.90)), style: StrokeStyle(lineWidth: 1.7, lineCap: .round))
+            case .runoff:
+                let start = point(0.10 + particle.lane * 0.43, 0.52 + particle.lane * 0.20, size)
+                let control = point(0.34, 0.67 + particle.offset * 0.05, size)
+                let end = point(0.59, 0.75, size)
+                drawDroplet(context: &context, at: quadratic(start, control, end, particle.progress), radius: 2.2, color: .cyan.opacity(0.88))
+            }
+        }
+    }
+
+    private static func drawCloud(
+        context: inout GraphicsContext,
+        size: CGSize,
+        moisture: CGFloat,
+        time: TimeInterval
+    ) {
+        let scale = 0.60 + moisture * 0.85
+        let center = point(0.42, 0.23, size)
+        let baseRadius = min(size.width, size.height) * 0.075 * scale
+        let puffCount = 4 + Int((moisture * 8).rounded(.down))
+        let storm = Color(
+            red: 0.94 - moisture * 0.56,
+            green: 0.97 - moisture * 0.49,
+            blue: 1.00 - moisture * 0.32
+        )
+
+        context.drawLayer { layer in
+            layer.addFilter(.shadow(color: .black.opacity(0.14 + moisture * 0.16), radius: 8, y: 5))
+            for index in 0..<puffCount {
+                let angle = CGFloat(index) / CGFloat(max(puffCount, 1)) * .pi * 2 + CGFloat(time * 0.06)
+                let spreadX = cos(angle) * baseRadius * (0.75 + moisture * 0.30)
+                let spreadY = sin(angle) * baseRadius * 0.38
+                let radius = baseRadius * (0.66 + CGFloat(index % 3) * 0.13)
+                let rect = CGRect(
+                    x: center.x + spreadX - radius,
+                    y: center.y + spreadY - radius,
+                    width: radius * 2,
+                    height: radius * 2
+                )
+                layer.fill(Path(ellipseIn: rect), with: .color(storm))
+            }
+            let base = CGRect(
+                x: center.x - baseRadius * 1.55,
+                y: center.y - baseRadius * 0.15,
+                width: baseRadius * 3.1,
+                height: baseRadius * 1.28
+            )
+            layer.fill(Path(roundedRect: base, cornerRadius: baseRadius * 0.62), with: .color(storm))
+        }
+    }
+
+    private static func drawDroplet(
+        context: inout GraphicsContext,
+        at position: CGPoint,
+        radius: CGFloat,
+        color: Color
+    ) {
+        context.drawLayer { layer in
+            layer.addFilter(.shadow(color: color, radius: radius * 1.8))
+            layer.fill(
+                Path(ellipseIn: CGRect(x: position.x - radius, y: position.y - radius, width: radius * 2, height: radius * 2)),
+                with: .color(color)
+            )
+        }
+    }
+
+    private static func point(_ x: CGFloat, _ y: CGFloat, _ size: CGSize) -> CGPoint {
+        CGPoint(x: x * size.width, y: y * size.height)
+    }
+
+    private static func linear(_ start: CGPoint, _ end: CGPoint, _ progress: CGFloat) -> CGPoint {
+        CGPoint(x: start.x + (end.x - start.x) * progress, y: start.y + (end.y - start.y) * progress)
+    }
+
+    private static func quadratic(_ start: CGPoint, _ control: CGPoint, _ end: CGPoint, _ progress: CGFloat) -> CGPoint {
+        let inverse = 1 - progress
+        return CGPoint(
+            x: inverse * inverse * start.x + 2 * inverse * progress * control.x + progress * progress * end.x,
+            y: inverse * inverse * start.y + 2 * inverse * progress * control.y + progress * progress * end.y
+        )
+    }
 }
 
 #Preview {

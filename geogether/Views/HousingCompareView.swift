@@ -7,7 +7,7 @@ struct HousingCompareView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text("Drag the handle to compare the two environments.")
+                Text("Drag the divider to compare the two environments.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
@@ -35,8 +35,8 @@ struct HousingCompareView: View {
                             .shadow(color: .black.opacity(0.3), radius: 4)
                             .position(x: handleX, y: geometry.size.height / 2)
 
-                        sceneLabel("URBAN", x: 48, width: geometry.size.width)
-                        sceneLabel("RURAL", x: geometry.size.width - 48, width: geometry.size.width)
+                        sceneLabel("URBAN", x: 48)
+                        sceneLabel("RURAL", x: geometry.size.width - 48)
                     }
                     .contentShape(Rectangle())
                     .gesture(
@@ -51,7 +51,7 @@ struct HousingCompareView: View {
                 .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("Urban and rural housing comparison")
-                .accessibilityValue("Urban side is (Int(split * 100)) percent visible")
+                .accessibilityValue("\(Int(split * 100)) percent urban")
                 .accessibilityAdjustableAction { direction in
                     switch direction {
                     case .increment: split = min(split + 0.1, 0.92)
@@ -87,13 +87,13 @@ struct HousingCompareView: View {
             title: "Urban",
             symbol: "building.2.fill",
             tint: AppPalette.navy,
-            text: "Flats and apartments are close to jobs, schools, services and public transport."
+            text: "More jobs and specialised services, including universities and major hospitals."
         )
         comparisonCard(
             title: "Rural",
             symbol: "leaf.fill",
             tint: .green,
-            text: "Homes are farther apart, with more open land and longer journeys to many services."
+            text: "More open land and local services such as primary schools, clinics and small shops."
         )
     }
 
@@ -110,7 +110,7 @@ struct HousingCompareView: View {
         }
     }
 
-    private func sceneLabel(_ text: String, x: CGFloat, width: CGFloat) -> some View {
+    private func sceneLabel(_ text: String, x: CGFloat) -> some View {
         Text(text)
             .font(.caption.weight(.bold))
             .foregroundStyle(.white)
@@ -160,6 +160,10 @@ private struct UrbanScene: View {
                     .fill(Color(red: 0.25, green: 0.27, blue: 0.30))
                     .frame(height: 22)
                     .frame(maxHeight: .infinity, alignment: .bottom)
+
+                CatCharacter(accessory: "briefcase.fill", tint: .purple)
+                    .frame(width: 72, height: 76)
+                    .position(x: geometry.size.width * 0.72, y: geometry.size.height - 42)
             }
         }
     }
@@ -205,6 +209,10 @@ private struct RuralScene: View {
                     .font(.system(size: 40))
                     .foregroundStyle(Color(red: 0.10, green: 0.50, blue: 0.20))
                     .position(x: geometry.size.width * 0.82, y: geometry.size.height * 0.78)
+
+                CatCharacter(accessory: "leaf.fill", tint: .green)
+                    .frame(width: 72, height: 76)
+                    .position(x: geometry.size.width * 0.70, y: geometry.size.height - 42)
             }
         }
     }
