@@ -1,5 +1,7 @@
 import SwiftUI
 
+// MARK: - 1. Settlement Hierarchy
+
 struct SettlementHierarchyView: View {
     private struct Level {
         let name: String
@@ -34,6 +36,10 @@ struct SettlementHierarchyView: View {
                 SettlementScene(level: selectedIndex, buildingCount: selected.buildings)
                     .frame(height: 330)
                     .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                            .stroke(.white.opacity(0.6), lineWidth: 1)
+                    )
                     .shadow(color: .black.opacity(0.14), radius: 10, y: 5)
 
                 VStack(spacing: 8) {
@@ -74,61 +80,275 @@ private struct SettlementScene: View {
     let buildingCount: Int
 
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                LinearGradient(
-                    colors: [Color(red: 0.55, green: 0.84, blue: 1), Color(red: 0.91, green: 0.97, blue: 1)],
-                    startPoint: .top,
-                    endPoint: .bottom
+        ZStack {
+            Canvas { context, size in
+                let w = size.width
+                let h = size.height
+
+                // Sky (shifts slightly warmer/hazier as urban density grows)
+                let haze = Double(level) / 6.0 * 0.12
+                context.fill(
+                    Path(CGRect(origin: .zero, size: size)),
+                    with: .linearGradient(
+                        Gradient(colors: [
+                            Color(red: 0.45 + haze, green: 0.78, blue: 0.98 - haze),
+                            Color(red: 0.88, green: 0.95, blue: 1.0)
+                        ]),
+                        startPoint: .zero,
+                        endPoint: CGPoint(x: 0, y: h)
+                    )
                 )
 
-                Circle()
-                    .fill(.yellow.opacity(0.9))
-                    .frame(width: 48, height: 48)
-                    .position(x: geometry.size.width * 0.82, y: 55)
-
-                Rectangle()
-                    .fill(Color(red: 0.34, green: 0.68, blue: 0.31))
-                    .frame(height: 105)
-                    .frame(maxHeight: .infinity, alignment: .bottom)
-
-                if level >= 3 {
-                    Rectangle()
-                        .fill(.gray.opacity(0.75))
-                        .frame(height: 28)
-                        .frame(maxHeight: .infinity, alignment: .bottom)
-                        .overlay(alignment: .bottom) {
-                            Rectangle()
-                                .fill(.white.opacity(0.8))
-                                .frame(height: 2)
-                                .padding(.bottom, 13)
-                        }
+                // Soft Sun
+                let sunCenter = CGPoint(x: w * 0.83, y: h * 0.17)
+                context.drawLayer { layer in
+                    layer.addFilter(.shadow(color: .yellow.opacity(0.55), radius: 16))
+                    layer.fill(
+                        Path(ellipseIn: CGRect(x: sunCenter.x - 22, y: sunCenter.y - 22, width: 44, height: 44)),
+                        with: .color(Color(red: 1.0, green: 0.93, blue: 0.55))
+                    )
                 }
 
-                LazyVGrid(
-                    columns: Array(repeating: GridItem(.flexible(), spacing: 5), count: level >= 4 ? 6 : 4),
-                    spacing: 5
-                ) {
-                    ForEach(0..<buildingCount, id: \.self) { index in
-                        Image(systemName: level >= 4 && index.isMultiple(of: 3) ? "building.2.fill" : "house.fill")
-                            .font(.system(size: level >= 4 ? 28 : 32))
-                            .foregroundStyle(index.isMultiple(of: 2) ? .orange : AppPalette.navy)
+                // Distant Rolling Hills
+                var backHill = Path()
+                backHill.move(to: CGPoint(x: 0, y: h * 0.65))
+                backHill.addQuadCurve(to: CGPoint(x: w * 0.58, y: h * 0.62), control: CGPoint(x: w * 0.28, y: h * 0.48))
+                backHill.addQuadCurve(to: CGPoint(x: w, y: h * 0.66), control: CGPoint(x: w * 0.82, y: h * 0.53))
+                backHill.addLine(to: CGPoint(x: w, y: h))
+                backHill.addLine(to: CGPoint(x: 0, y: h))
+                backHill.closeSubpath()
+                context.fill(backHill, with: .color(Color(red: 0.48, green: 0.75, blue: 0.46)))
+
+                // Midground Valley
+                var frontHill = Path()
+                frontHill.move(to: CGPoint(x: 0, y: h * 0.70))
+                frontHill.addCurve(
+                    to: CGPoint(x: w, y: h * 0.68),
+                    control1: CGPoint(x: w * 0.35, y: h * 0.76),
+                    control2: CGPoint(x: w * 0.68, y: h * 0.62)
+                )
+                frontHill.addLine(to: CGPoint(x: w, y: h))
+                frontHill.addLine(to: CGPoint(x: 0, y: h))
+                frontHill.closeSubpath()
+                context.fill(frontHill, with: .color(Color(red: 0.33, green: 0.65, blue: 0.32)))
+
+                // Dirt path (levels 0-2) or Paved Road (levels 3+)
+                let groundY = h * 0.84
+                if level < 3 {
+                    var dirtPath = Path()
+                    dirtPath.move(to: CGPoint(x: w * 0.12, y: h))
+                    dirtPath.addQuadCurve(
+                        to: CGPoint(x: w * 0.52, y: groundY - 4),
+                        control: CGPoint(x: w * 0.28, y: h * 0.88)
+                    )
+                    context.stroke(
+                        dirtPath,
+                        with: .color(Color(red: 0.76, green: 0.65, blue: 0.46)),
+                        style: StrokeStyle(lineWidth: 10, lineCap: .round)
+                    )
+                } else {
+                    let roadRect = CGRect(x: 0, y: groundY, width: w, height: h - groundY)
+                    context.fill(Path(roadRect), with: .color(Color(red: 0.24, green: 0.27, blue: 0.31)))
+
+                    // Sidewalk curb
+                    context.fill(
+                        Path(CGRect(x: 0, y: groundY, width: w, height: 5)),
+                        with: .color(Color(red: 0.78, green: 0.80, blue: 0.82))
+                    )
+
+                    // Dashed lane markings
+                    var lane = Path()
+                    let laneY = groundY + (h - groundY) * 0.48
+                    lane.move(to: CGPoint(x: 0, y: laneY))
+                    lane.addLine(to: CGPoint(x: w, y: laneY))
+                    context.stroke(
+                        lane,
+                        with: .color(.white.opacity(0.75)),
+                        style: StrokeStyle(lineWidth: 2, dash: [14, 12])
+                    )
+                }
+
+                // Back Skyline Row (for Large Town, City, Conurbation)
+                if level >= 4 {
+                    let towerCount = level == 4 ? 5 : (level == 5 ? 8 : 12)
+                    let spacing = (w - 40) / CGFloat(towerCount)
+                    for i in 0..<towerCount {
+                        let seed = sin(Double(i) * 19.3 + Double(level))
+                        let bWidth = spacing * (level == 6 ? 0.92 : 0.78)
+                        let bHeight = CGFloat(65 + abs(seed) * (level == 6 ? 115 : 75))
+                        let x = 20 + CGFloat(i) * spacing
+                        let y = groundY - bHeight
+                        drawSkyscraper(
+                            context: &context,
+                            rect: CGRect(x: x, y: y, width: bWidth, height: bHeight),
+                            seed: i + level,
+                            isConurbation: level == 6
+                        )
                     }
                 }
-                .padding(.horizontal, 18)
-                .padding(.bottom, level >= 3 ? 48 : 22)
-                .frame(maxHeight: .infinity, alignment: .bottom)
 
-                CatCharacter(accessory: level >= 3 ? "briefcase.fill" : "leaf.fill", tint: .teal)
-                    .frame(width: 72, height: 78)
-                    .position(x: 54, y: geometry.size.height - 48)
+                // Foreground Houses / Shops
+                let fgCount = min(buildingCount, level >= 4 ? 7 : buildingCount)
+                let usableWidth = w - 115 // leave room for CatCharacter on the left
+                let step = usableWidth / CGFloat(max(fgCount, 1))
+
+                for i in 0..<fgCount {
+                    let centerX = 98 + step * (CGFloat(i) + 0.5)
+                    let isShop = level >= 2 && i.isMultiple(of: 3)
+                    let houseW: CGFloat = level >= 3 ? 34 : 40
+                    let houseH: CGFloat = isShop ? 38 : 28
+                    let rect = CGRect(x: centerX - houseW / 2, y: groundY - houseH, width: houseW, height: houseH)
+
+                    if isShop {
+                        drawShopfront(context: &context, rect: rect, index: i)
+                    } else {
+                        drawCottage(context: &context, rect: rect, index: i)
+                    }
+                }
+
+                // Rural Trees when density is low
+                if level <= 4 {
+                    let treePositions: [CGFloat] = level <= 1 ? [0.28, 0.72, 0.86] : [0.88]
+                    for tx in treePositions {
+                        drawPineTree(context: &context, base: CGPoint(x: w * tx, y: groundY), scale: 0.9)
+                    }
+                }
             }
+
+            CatCharacter(accessory: level >= 3 ? "briefcase.fill" : "leaf.fill", tint: .teal)
+                .frame(width: 72, height: 78)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                .padding(.leading, 14)
+                .padding(.bottom, 10)
         }
         .animation(.snappy, value: level)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Settlement with \(buildingCount) buildings")
     }
+
+    private func drawCottage(context: inout GraphicsContext, rect: CGRect, index: Int) {
+        let wallColors = [
+            Color(red: 0.98, green: 0.95, blue: 0.88),
+            Color(red: 0.96, green: 0.89, blue: 0.78),
+            Color(red: 0.91, green: 0.94, blue: 0.96)
+        ]
+        let roofColors = [
+            Color(red: 0.76, green: 0.34, blue: 0.24),
+            Color(red: 0.25, green: 0.35, blue: 0.48),
+            Color(red: 0.64, green: 0.42, blue: 0.24)
+        ]
+
+        // Walls
+        context.fill(
+            Path(roundedRect: rect, cornerRadius: 2),
+            with: .color(wallColors[index % wallColors.count])
+        )
+
+        // Pitched Roof
+        var roof = Path()
+        roof.move(to: CGPoint(x: rect.minX - 4, y: rect.minY))
+        roof.addLine(to: CGPoint(x: rect.midX, y: rect.minY - 14))
+        roof.addLine(to: CGPoint(x: rect.maxX + 4, y: rect.minY))
+        roof.closeSubpath()
+        context.fill(roof, with: .color(roofColors[index % roofColors.count]))
+
+        // Door
+        let doorW = rect.width * 0.22
+        let doorH = rect.height * 0.46
+        let door = CGRect(x: rect.midX - doorW / 2, y: rect.maxY - doorH, width: doorW, height: doorH)
+        context.fill(Path(roundedRect: door, cornerRadius: 1.5), with: .color(AppPalette.navy))
+
+        // Warm lit windows
+        let winSize = rect.width * 0.18
+        let leftWin = CGRect(x: rect.minX + 5, y: rect.minY + 7, width: winSize, height: winSize)
+        let rightWin = CGRect(x: rect.maxX - 5 - winSize, y: rect.minY + 7, width: winSize, height: winSize)
+        context.fill(Path(leftWin), with: .color(Color(red: 1.0, green: 0.86, blue: 0.42)))
+        context.fill(Path(rightWin), with: .color(Color(red: 1.0, green: 0.86, blue: 0.42)))
+    }
+
+    private func drawShopfront(context: inout GraphicsContext, rect: CGRect, index: Int) {
+        // Main facade
+        context.fill(
+            Path(roundedRect: rect, cornerRadius: 3),
+            with: .color(Color(red: 0.93, green: 0.86, blue: 0.76))
+        )
+        // Roof parapet
+        context.fill(
+            Path(CGRect(x: rect.minX - 2, y: rect.minY - 4, width: rect.width + 4, height: 5)),
+            with: .color(AppPalette.navy)
+        )
+        // Striped Awning
+        let awningColor: Color = index.isMultiple(of: 2) ? .teal : .orange
+        let awning = CGRect(x: rect.minX - 2, y: rect.midY - 2, width: rect.width + 4, height: 7)
+        context.fill(Path(roundedRect: awning, cornerRadius: 2), with: .color(awningColor))
+
+        // Display window
+        let window = CGRect(x: rect.minX + 5, y: rect.midY + 7, width: rect.width - 10, height: rect.height * 0.32)
+        context.fill(Path(roundedRect: window, cornerRadius: 2), with: .color(Color(red: 0.75, green: 0.91, blue: 0.98)))
+    }
+
+    private func drawSkyscraper(context: inout GraphicsContext, rect: CGRect, seed: Int, isConurbation: Bool) {
+        let palette = [
+            Color(red: 0.36, green: 0.49, blue: 0.62),
+            Color(red: 0.45, green: 0.57, blue: 0.68),
+            Color(red: 0.28, green: 0.39, blue: 0.52)
+        ]
+        context.fill(
+            Path(roundedRect: rect, cornerRadius: 3),
+            with: .color(palette[seed % palette.count])
+        )
+
+        // Spire on taller towers
+        if seed.isMultiple(of: 3) {
+            var spire = Path()
+            spire.move(to: CGPoint(x: rect.midX, y: rect.minY))
+            spire.addLine(to: CGPoint(x: rect.midX, y: rect.minY - 14))
+            context.stroke(spire, with: .color(AppPalette.navy.opacity(0.7)), style: StrokeStyle(lineWidth: 2, lineCap: .round))
+        }
+
+        // Window grid
+        let cols = max(2, Int(rect.width / 8))
+        let rows = max(3, Int(rect.height / 11))
+        let padX: CGFloat = 4
+        let padY: CGFloat = 6
+        let cellW = (rect.width - padX * 2) / CGFloat(cols)
+        let cellH = (rect.height - padY * 2) / CGFloat(rows)
+
+        for r in 0..<rows {
+            for c in 0..<cols {
+                let wx = rect.minX + padX + CGFloat(c) * cellW + 1.5
+                let wy = rect.minY + padY + CGFloat(r) * cellH + 1.5
+                let lit = (r + c + seed).isMultiple(of: isConurbation ? 2 : 3)
+                let color = lit ? Color(red: 1.0, green: 0.90, blue: 0.52).opacity(0.85) : Color.white.opacity(0.25)
+                context.fill(
+                    Path(CGRect(x: wx, y: wy, width: max(2, cellW - 3), height: max(2, cellH - 4))),
+                    with: .color(color)
+                )
+            }
+        }
+    }
+
+    private func drawPineTree(context: inout GraphicsContext, base: CGPoint, scale: CGFloat) {
+        // Trunk
+        context.fill(
+            Path(CGRect(x: base.x - 3 * scale, y: base.y - 12 * scale, width: 6 * scale, height: 12 * scale)),
+            with: .color(Color(red: 0.42, green: 0.28, blue: 0.16))
+        )
+        // Two foliage tiers
+        for tier in 0..<2 {
+            let yOffset = CGFloat(tier) * 12 * scale
+            let halfW = (15 - CGFloat(tier) * 3) * scale
+            var tri = Path()
+            tri.move(to: CGPoint(x: base.x, y: base.y - (32 + yOffset) * scale))
+            tri.addLine(to: CGPoint(x: base.x - halfW, y: base.y - (10 + yOffset) * scale))
+            tri.addLine(to: CGPoint(x: base.x + halfW, y: base.y - (10 + yOffset) * scale))
+            tri.closeSubpath()
+            context.fill(tri, with: .color(Color(red: 0.16, green: 0.48, blue: 0.24)))
+        }
+    }
 }
+
+// MARK: - 2. Mangrove Roots
 
 struct MangroveRootsView: View {
     private enum RootType: String, CaseIterable, Identifiable {
@@ -206,80 +426,184 @@ private struct MangroveScene: View {
     let pulse: Bool
 
     var body: some View {
-        GeometryReader { geometry in
-            let width = geometry.size.width
-            let height = geometry.size.height
+        Canvas { context, size in
+            let w = size.width
+            let h = size.height
+            let waterY = h * 0.64
+            let mudY = h * 0.80
 
-            ZStack {
-                LinearGradient(
-                    colors: [Color(red: 0.58, green: 0.87, blue: 0.96), Color(red: 0.75, green: 0.91, blue: 0.86)],
-                    startPoint: .top,
-                    endPoint: .bottom
+            // 1. Coastal Sky
+            context.fill(
+                Path(CGRect(origin: .zero, size: size)),
+                with: .linearGradient(
+                    Gradient(colors: [
+                        Color(red: 0.55, green: 0.86, blue: 0.96),
+                        Color(red: 0.84, green: 0.95, blue: 0.92)
+                    ]),
+                    startPoint: .zero,
+                    endPoint: CGPoint(x: 0, y: waterY)
                 )
+            )
 
-                Rectangle()
-                    .fill(Color(red: 0.30, green: 0.68, blue: 0.75).opacity(0.7))
-                    .frame(height: 95)
-                    .position(x: width / 2, y: height - 70)
-                Rectangle()
-                    .fill(Color(red: 0.39, green: 0.27, blue: 0.17))
-                    .frame(height: 55)
-                    .frame(maxHeight: .infinity, alignment: .bottom)
+            // Distant shoreline silhouettes
+            var distantLand = Path()
+            distantLand.move(to: CGPoint(x: 0, y: waterY))
+            distantLand.addQuadCurve(to: CGPoint(x: w * 0.45, y: waterY - 14), control: CGPoint(x: w * 0.2, y: waterY - 22))
+            distantLand.addQuadCurve(to: CGPoint(x: w, y: waterY), control: CGPoint(x: w * 0.78, y: waterY - 18))
+            distantLand.closeSubpath()
+            context.fill(distantLand, with: .color(Color(red: 0.38, green: 0.67, blue: 0.55).opacity(0.45)))
 
-                Capsule()
-                    .fill(Color(red: 0.36, green: 0.22, blue: 0.12))
-                    .frame(width: 28, height: 185)
-                    .position(x: width / 2, y: 183)
+            // 2. Organic Tree Canopy (layered leafy clusters instead of a single icon)
+            let canopyCenter = CGPoint(x: w * 0.5, y: h * 0.25)
+            let foliageClusters: [(dx: CGFloat, dy: CGFloat, rx: CGFloat, ry: CGFloat, color: Color)] = [
+                (-65, 12, 62, 44, Color(red: 0.11, green: 0.44, blue: 0.22)),
+                (68, 14, 60, 42, Color(red: 0.11, green: 0.44, blue: 0.22)),
+                (0, -18, 86, 54, Color(red: 0.15, green: 0.54, blue: 0.27)),
+                (-38, -4, 58, 42, Color(red: 0.20, green: 0.61, blue: 0.31)),
+                (40, -2, 56, 40, Color(red: 0.18, green: 0.58, blue: 0.29))
+            ]
 
-                Image(systemName: "tree.fill")
-                    .font(.system(size: 170))
-                    .foregroundStyle(Color(red: 0.10, green: 0.46, blue: 0.22))
-                    .position(x: width / 2, y: 105)
+            // 3. Tapered Trunk & Upper Branches
+            var trunk = Path()
+            trunk.move(to: CGPoint(x: w * 0.5 - 15, y: h * 0.58))
+            trunk.addQuadCurve(to: CGPoint(x: w * 0.5 - 10, y: h * 0.28), control: CGPoint(x: w * 0.5 - 13, y: h * 0.43))
+            trunk.addLine(to: CGPoint(x: w * 0.5 - 48, y: h * 0.22))
+            trunk.addLine(to: CGPoint(x: w * 0.5 - 42, y: h * 0.18))
+            trunk.addLine(to: CGPoint(x: w * 0.5, y: h * 0.25))
+            trunk.addLine(to: CGPoint(x: w * 0.5 + 45, y: h * 0.19))
+            trunk.addLine(to: CGPoint(x: w * 0.5 + 50, y: h * 0.24))
+            trunk.addLine(to: CGPoint(x: w * 0.5 + 10, y: h * 0.29))
+            trunk.addQuadCurve(to: CGPoint(x: w * 0.5 + 15, y: h * 0.58), control: CGPoint(x: w * 0.5 + 13, y: h * 0.43))
+            trunk.closeSubpath()
+            context.fill(trunk, with: .color(Color(red: 0.38, green: 0.25, blue: 0.15)))
 
-                roots(width: width, height: height)
-                    .foregroundStyle(.brown)
-                    .scaleEffect(pulse ? 1.06 : 1)
+            // Draw foliage over branches
+            for cluster in foliageClusters {
+                let rect = CGRect(
+                    x: canopyCenter.x + cluster.dx - cluster.rx,
+                    y: canopyCenter.y + cluster.dy - cluster.ry,
+                    width: cluster.rx * 2,
+                    height: cluster.ry * 2
+                )
+                context.fill(Path(ellipseIn: rect), with: .color(cluster.color))
             }
-            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .shadow(color: .black.opacity(0.14), radius: 10, y: 5)
-        }
-    }
 
-    @ViewBuilder
-    private func roots(width: CGFloat, height: CGFloat) -> some View {
-        if rootType == "Prop roots" {
-            ForEach(0..<7, id: \.self) { index in
-                Path { path in
-                    let offset = CGFloat(index - 3) * 24
-                    path.move(to: CGPoint(x: width / 2, y: height * 0.50))
-                    path.addQuadCurve(
-                        to: CGPoint(x: width / 2 + offset, y: height - 22),
-                        control: CGPoint(x: width / 2 + offset * 0.8, y: height * 0.68)
+            // 4. Water Layer
+            var water = Path()
+            water.move(to: CGPoint(x: 0, y: waterY))
+            for step in 0...20 {
+                let x = w * CGFloat(step) / 20
+                let wave = sin(CGFloat(step) * 0.9) * 2.5
+                water.addLine(to: CGPoint(x: x, y: waterY + wave))
+            }
+            water.addLine(to: CGPoint(x: w, y: mudY))
+            water.addLine(to: CGPoint(x: 0, y: mudY))
+            water.closeSubpath()
+            context.fill(
+                water,
+                with: .linearGradient(
+                    Gradient(colors: [
+                        Color(red: 0.22, green: 0.66, blue: 0.74).opacity(0.62),
+                        Color(red: 0.16, green: 0.50, blue: 0.58).opacity(0.78)
+                    ]),
+                    startPoint: CGPoint(x: 0, y: waterY),
+                    endPoint: CGPoint(x: 0, y: mudY)
+                )
+            )
+
+            // 5. Mud / Sediment Cross-Section
+            let mudRect = CGRect(x: 0, y: mudY, width: w, height: h - mudY)
+            context.fill(
+                Path(mudRect),
+                with: .linearGradient(
+                    Gradient(colors: [
+                        Color(red: 0.40, green: 0.28, blue: 0.18),
+                        Color(red: 0.29, green: 0.19, blue: 0.12)
+                    ]),
+                    startPoint: CGPoint(x: 0, y: mudY),
+                    endPoint: CGPoint(x: 0, y: h)
+                )
+            )
+
+            // Small pebbles/shells in mud for cross-section realism
+            for i in 0..<14 {
+                let px = 22 + CGFloat(i) * (w - 44) / 13
+                let py = mudY + 14 + CGFloat(i % 3) * 16
+                context.fill(
+                    Path(ellipseIn: CGRect(x: px, y: py, width: 7, height: 4)),
+                    with: .color(Color.white.opacity(0.14))
+                )
+            }
+
+            // 6. Root Systems (with subtle pulse scale)
+            let scale: CGFloat = pulse ? 1.07 : 1.0
+            let darkBark = Color(red: 0.34, green: 0.21, blue: 0.11)
+            let lightBark = Color(red: 0.49, green: 0.33, blue: 0.19)
+
+            if rootType == "Prop roots" {
+                let offsets: [CGFloat] = [-108, -74, -40, 0, 40, 74, 108]
+                for (idx, rawOffset) in offsets.enumerated() {
+                    let offset = rawOffset * scale
+                    let startY = h * (0.48 + CGFloat(abs(idx - 3)) * 0.025)
+                    var root = Path()
+                    root.move(to: CGPoint(x: w * 0.5 + rawOffset * 0.08, y: startY))
+                    root.addQuadCurve(
+                        to: CGPoint(x: w * 0.5 + offset, y: mudY + 18),
+                        control: CGPoint(x: w * 0.5 + offset * 0.85, y: h * 0.62)
+                    )
+                    context.stroke(root, with: .color(darkBark), style: StrokeStyle(lineWidth: 9.5, lineCap: .round))
+                    context.stroke(root, with: .color(lightBark), style: StrokeStyle(lineWidth: 3.5, lineCap: .round))
+                }
+            } else if rootType == "Breathing roots" {
+                // Horizontal cable root beneath the mud
+                var cable = Path()
+                cable.move(to: CGPoint(x: 24, y: mudY + 18))
+                cable.addLine(to: CGPoint(x: w - 24, y: mudY + 18))
+                context.stroke(cable, with: .color(darkBark), style: StrokeStyle(lineWidth: 8, lineCap: .round))
+
+                // Vertical pencil-like pneumatophores rising above water
+                for i in 0..<13 {
+                    let x = 32 + CGFloat(i) * (w - 64) / 12
+                    let tipY = waterY - CGFloat(14 + (i % 3) * 9) * scale
+                    var stalk = Path()
+                    stalk.move(to: CGPoint(x: x, y: mudY + 16))
+                    stalk.addLine(to: CGPoint(x: x, y: tipY))
+                    context.stroke(stalk, with: .color(lightBark), style: StrokeStyle(lineWidth: 6.5, lineCap: .round))
+
+                    // Oxygen breathing pores (lenticels)
+                    context.fill(
+                        Path(ellipseIn: CGRect(x: x - 1.5, y: tipY + 6, width: 3, height: 3)),
+                        with: .color(.white.opacity(0.65))
                     )
                 }
-                .stroke(.brown, style: StrokeStyle(lineWidth: 9, lineCap: .round))
-            }
-        } else if rootType == "Breathing roots" {
-            ForEach(0..<15, id: \.self) { index in
-                Capsule()
-                    .frame(width: 7, height: CGFloat(24 + index % 3 * 10))
-                    .position(x: 24 + CGFloat(index) * (width - 48) / 14, y: height - 45)
-            }
-        } else {
-            ForEach(0..<6, id: \.self) { index in
-                Path { path in
-                    let start = 30 + CGFloat(index) * (width - 60) / 6
-                    path.move(to: CGPoint(x: start, y: height - 24))
-                    path.addQuadCurve(
-                        to: CGPoint(x: start + 42, y: height - 24),
-                        control: CGPoint(x: start + 21, y: height - 82)
+            } else {
+                // Knee roots looping up above the water/mud and back down
+                for i in 0..<5 {
+                    let startX = 36 + CGFloat(i) * (w - 110) / 4
+                    let loopWidth: CGFloat = 46
+                    let peakY = waterY - CGFloat(16 + (i % 2) * 8) * scale
+
+                    var knee = Path()
+                    knee.move(to: CGPoint(x: startX, y: mudY + 16))
+                    knee.addQuadCurve(
+                        to: CGPoint(x: startX + loopWidth, y: mudY + 16),
+                        control: CGPoint(x: startX + loopWidth / 2, y: peakY)
                     )
+                    context.stroke(knee, with: .color(darkBark), style: StrokeStyle(lineWidth: 9, lineCap: .round))
+                    context.stroke(knee, with: .color(lightBark), style: StrokeStyle(lineWidth: 3.5, lineCap: .round))
                 }
-                .stroke(.brown, style: StrokeStyle(lineWidth: 8, lineCap: .round))
             }
         }
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(.white.opacity(0.6), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.14), radius: 10, y: 5)
     }
 }
+
+// MARK: - 3. Sustainable Housing
 
 struct HousingSolutionsView: View {
     @State private var progress = 0.0
@@ -298,6 +622,10 @@ struct HousingSolutionsView: View {
                 HousingScene(solutionCount: solutionCount)
                     .frame(height: 390)
                     .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                            .stroke(.white.opacity(0.6), lineWidth: 1)
+                    )
                     .shadow(color: .black.opacity(0.14), radius: 10, y: 5)
 
                 VStack(spacing: 8) {
@@ -349,62 +677,191 @@ private struct HousingScene: View {
     let solutionCount: Int
 
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                LinearGradient(
-                    colors: [Color(red: 0.67, green: 0.86, blue: 1), Color(red: 0.96, green: 0.96, blue: 0.86)],
-                    startPoint: .top,
-                    endPoint: .bottom
+        ZStack {
+            Canvas { context, size in
+                let w = size.width
+                let h = size.height
+                let groundY = h * 0.72
+                let roadY = h * 0.82
+
+                // 1. Sky transitions from dusty smog to crisp blue
+                let skyTop = solutionCount >= 2
+                    ? Color(red: 0.45, green: 0.80, blue: 0.99)
+                    : Color(red: 0.74, green: 0.78, blue: 0.76)
+                let skyBottom = solutionCount >= 2
+                    ? Color(red: 0.88, green: 0.96, blue: 1.0)
+                    : Color(red: 0.91, green: 0.88, blue: 0.79)
+
+                context.fill(
+                    Path(CGRect(origin: .zero, size: size)),
+                    with: .linearGradient(
+                        Gradient(colors: [skyTop, skyBottom]),
+                        startPoint: .zero,
+                        endPoint: CGPoint(x: 0, y: groundY)
+                    )
                 )
 
-                Rectangle()
-                    .fill(solutionCount >= 3 ? Color.green.opacity(0.55) : Color.brown.opacity(0.42))
-                    .frame(height: 110)
-                    .frame(maxHeight: .infinity, alignment: .bottom)
+                // 2. Ground (barren dirt -> lush park grass at step 3)
+                let groundColor = solutionCount >= 3
+                    ? Color(red: 0.34, green: 0.70, blue: 0.34)
+                    : Color(red: 0.65, green: 0.54, blue: 0.42)
+                context.fill(
+                    Path(CGRect(x: 0, y: groundY, width: w, height: h - groundY)),
+                    with: .color(groundColor)
+                )
 
-                HStack(alignment: .bottom, spacing: 9) {
-                    ForEach(0..<5, id: \.self) { index in
-                        Image(systemName: "building.2.fill")
-                            .font(.system(size: 50 + CGFloat(index % 2) * 18))
-                            .foregroundStyle(index.isMultiple(of: 2) ? AppPalette.navy : .orange)
+                // 3. Roadway
+                context.fill(
+                    Path(CGRect(x: 0, y: roadY, width: w, height: h - roadY)),
+                    with: .color(Color(red: 0.25, green: 0.28, blue: 0.32))
+                )
+                var roadLine = Path()
+                roadLine.move(to: CGPoint(x: 0, y: roadY + (h - roadY) * 0.5))
+                roadLine.addLine(to: CGPoint(x: w, y: roadY + (h - roadY) * 0.5))
+                context.stroke(roadLine, with: .color(.white.opacity(0.65)), style: StrokeStyle(lineWidth: 2, dash: [12, 10]))
+
+                // 4. Apartment Buildings (upgraded facades + solar panels & rainwater tanks at step 4)
+                let buildingSpecs: [(x: CGFloat, width: CGFloat, height: CGFloat, color: Color)] = [
+                    (w * 0.14, 54, 118, Color(red: 0.94, green: 0.84, blue: 0.70)),
+                    (w * 0.32, 62, 145, Color(red: 0.88, green: 0.91, blue: 0.95)),
+                    (w * 0.52, 58, 128, Color(red: 0.96, green: 0.89, blue: 0.78)),
+                    (w * 0.70, 56, 138, Color(red: 0.85, green: 0.92, blue: 0.89))
+                ]
+
+                for (idx, spec) in buildingSpecs.enumerated() {
+                    let rect = CGRect(x: spec.x, y: groundY - spec.height, width: spec.width, height: spec.height)
+                    let wallColor = solutionCount >= 1 ? spec.color : spec.color.opacity(0.75)
+
+                    context.fill(Path(roundedRect: rect, cornerRadius: 4), with: .color(wallColor))
+                    context.fill(
+                        Path(CGRect(x: rect.minX - 2, y: rect.minY - 4, width: rect.width + 4, height: 5)),
+                        with: .color(AppPalette.navy)
+                    )
+
+                    // Windows
+                    for r in 0..<4 {
+                        for c in 0..<2 {
+                            let wx = rect.minX + 10 + CGFloat(c) * (rect.width - 28)
+                            let wy = rect.minY + 14 + CGFloat(r) * 24
+                            let winColor = solutionCount >= 1
+                                ? Color(red: 0.68, green: 0.89, blue: 0.98)
+                                : Color(red: 0.35, green: 0.33, blue: 0.30)
+                            context.fill(
+                                Path(roundedRect: CGRect(x: wx, y: wy, width: 12, height: 14), cornerRadius: 2),
+                                with: .color(winColor)
+                            )
+                        }
+                    }
+
+                    // Step 4: Rooftop Solar Panels & Rainwater Barrel
+                    if solutionCount >= 4 {
+                        var solar = Path()
+                        solar.move(to: CGPoint(x: rect.minX + 8, y: rect.minY - 5))
+                        solar.addLine(to: CGPoint(x: rect.maxX - 8, y: rect.minY - 15))
+                        solar.addLine(to: CGPoint(x: rect.maxX - 8, y: rect.minY - 5))
+                        solar.closeSubpath()
+                        context.fill(solar, with: .color(Color(red: 0.12, green: 0.36, blue: 0.72)))
+
+                        if idx.isMultiple(of: 2) {
+                            let barrel = CGRect(x: rect.maxX + 2, y: groundY - 22, width: 12, height: 22)
+                            context.fill(Path(roundedRect: barrel, cornerRadius: 3), with: .color(.blue))
+                        }
                     }
                 }
-                .frame(maxHeight: .infinity, alignment: .bottom)
-                .padding(.bottom, 70)
 
-                if solutionCount >= 1 {
-                    Label("Clean water", systemImage: "drop.fill")
-                        .sceneChip(color: .blue)
-                        .position(x: 78, y: 58)
+                // Step 1: Clean Waste Bins & Water Pipe Infrastructure (replaces trash clutter)
+                if solutionCount == 0 {
+                    // Litter / waste piles before cleanup
+                    for i in 0..<5 {
+                        let lx = 36 + CGFloat(i) * 42
+                        context.fill(
+                            Path(ellipseIn: CGRect(x: lx, y: groundY + 8, width: 14, height: 8)),
+                            with: .color(Color(red: 0.42, green: 0.33, blue: 0.24))
+                        )
+                    }
+                } else {
+                    // Recycling & waste bins
+                    let binColors: [Color] = [.green, .blue, .orange]
+                    for (i, color) in binColors.enumerated() {
+                        let bx = 24 + CGFloat(i) * 14
+                        context.fill(
+                            Path(roundedRect: CGRect(x: bx, y: groundY - 18, width: 10, height: 18), cornerRadius: 2),
+                            with: .color(color)
+                        )
+                    }
                 }
+
+                // Step 2: Electric Bus & Bus Stop Shelter
                 if solutionCount >= 2 {
-                    Label("Bus link", systemImage: "bus.fill")
-                        .sceneChip(color: .purple)
-                        .position(x: geometry.size.width - 70, y: 85)
-                }
-                if solutionCount >= 3 {
-                    Image(systemName: "tree.fill")
-                        .font(.system(size: 62))
-                        .foregroundStyle(.green)
-                        .position(x: 64, y: geometry.size.height - 77)
-                }
-                if solutionCount >= 4 {
-                    Image(systemName: "sun.max.fill")
-                        .font(.system(size: 42))
-                        .foregroundStyle(.yellow)
-                        .position(x: geometry.size.width - 58, y: 48)
+                    let busRect = CGRect(x: w - 125, y: roadY - 24, width: 88, height: 34)
+                    context.fill(Path(roundedRect: busRect, cornerRadius: 7), with: .color(.teal))
+                    context.fill(
+                        Path(roundedRect: CGRect(x: busRect.minX + 8, y: busRect.minY + 6, width: busRect.width - 16, height: 12), cornerRadius: 3),
+                        with: .color(.white.opacity(0.85))
+                    )
+                    // Wheels
+                    context.fill(Path(ellipseIn: CGRect(x: busRect.minX + 12, y: busRect.maxY - 6, width: 12, height: 12)), with: .color(.black))
+                    context.fill(Path(ellipseIn: CGRect(x: busRect.maxX - 24, y: busRect.maxY - 6, width: 12, height: 12)), with: .color(.black))
                 }
 
-                CatCharacter(accessory: solutionCount >= 2 ? "heart.fill" : "exclamationmark.triangle.fill", tint: solutionCount >= 2 ? .green : .orange)
-                    .frame(width: 84, height: 90)
-                    .position(x: geometry.size.width / 2, y: geometry.size.height - 44)
+                // Step 3: Park Trees & Bench
+                if solutionCount >= 3 {
+                    let treeXs: [CGFloat] = [28, w - 34]
+                    for tx in treeXs {
+                        context.fill(
+                            Path(CGRect(x: tx - 4, y: groundY - 26, width: 8, height: 26)),
+                            with: .color(Color(red: 0.44, green: 0.29, blue: 0.16))
+                        )
+                        context.fill(
+                            Path(ellipseIn: CGRect(x: tx - 22, y: groundY - 62, width: 44, height: 42)),
+                            with: .color(Color(red: 0.16, green: 0.56, blue: 0.28))
+                        )
+                    }
+                }
+
+                // Step 4: Bright Sun
+                if solutionCount >= 4 {
+                    let sun = CGPoint(x: w - 48, y: 46)
+                    context.drawLayer { layer in
+                        layer.addFilter(.shadow(color: .yellow.opacity(0.65), radius: 14))
+                        layer.fill(
+                            Path(ellipseIn: CGRect(x: sun.x - 20, y: sun.y - 20, width: 40, height: 40)),
+                            with: .color(.yellow)
+                        )
+                    }
+                }
             }
+
+            if solutionCount >= 1 {
+                Label("Clean water", systemImage: "drop.fill")
+                    .sceneChip(color: .blue)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    .padding(14)
+            }
+            if solutionCount >= 2 {
+                Label("Bus link", systemImage: "bus.fill")
+                    .sceneChip(color: .purple)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                    .padding(.top, 52)
+                    .padding(.trailing, 14)
+            }
+
+            CatCharacter(
+                accessory: solutionCount >= 2 ? "heart.fill" : "exclamationmark.triangle.fill",
+                tint: solutionCount >= 2 ? .green : .orange
+            )
+            .frame(width: 80, height: 86)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+            .padding(.leading, 16)
+            .padding(.bottom, 12)
         }
         .animation(.spring(response: 0.45, dampingFraction: 0.72), value: solutionCount)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Neighbourhood with \(solutionCount) of 4 improvements")
     }
 }
+
+// MARK: - Character & Helpers
 
 struct CatCharacter: View {
     let accessory: String
