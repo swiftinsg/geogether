@@ -33,45 +33,26 @@ enum QuestionBank {
         tint: .orange,
         questions: [
             fill("hs1",
-                 prompt: "There are three aspects of sustainability to consider when developing housing: social sustainability, economic sustainability and ______ sustainability.",
-                 blanks: [blank("environmental", "environment")]),
+                 prompt: "What is one improvement we can make that contributes to sustainable housing?",
+                 blanks: [blank("waste disposal", "waste disposals", "public transport","sewage disposals","public transports", "solar power", "rainwater collection")]),
 
             fill("hs2",
-                 prompt: "Social sustainability focuses on creating inclusive, secure and healthy communities that meet the ______ and future needs of residents.",
-                 blanks: [blank("present", "current")]),
+                 prompt: "What is one more improvement we can make that contributes to sustainable housing?",
+                 blanks: [blank("waste disposal", "waste disposals", "public transport","sewage disposals","public transports", "solar power", "rainwater collection")]),
 
             fill("hs3",
-                 prompt: "Proper waste and sewage disposal reduces the outbreak of ______, improving residents' quality of life.",
-                 blanks: [blank("diseases", "disease", "illnesses", "illness")]),
+                 prompt: "What is one more improvement we can make that contributes to sustainable housing?",
+                 blanks: [blank("waste disposal", "waste disposals", "public transport","sewage disposals","public transports", "solar power", "rainwater collection")]),
 
             fill("hs4",
-                 prompt: "A bus station is an example of a ______, as it serves the key function of providing transport.",
-                 blanks: [blank("facility", "facilities")]),
+                 prompt: "Extra: Improper waste and sewage disposal can increase the chances of _____",
+                 blanks: [blank("disease", "diseases","sickness")]),
 
             fill("hs5",
-                 prompt: "Shared spaces such as parks and community centres help promote social ______ by encouraging interaction between neighbours.",
-                 blanks: [blank("cohesion")]),
+                 prompt: "Extra: Shared spaces such as parks and community centres help promote ______ by encouraging interaction between neighbours.",
+                 blanks: [blank("social cohesion", "a sense of belonging")]),
 
-            fill("hs6",
-                 prompt: "Ensuring that residents are not threatened by sudden eviction provides them with security of ______.",
-                 blanks: [blank("tenure")]),
 
-            fill("hs7",
-                 prompt: "Developing housing alongside infrastructure, services and amenities is known as integrated land use and ______.",
-                 blanks: [blank("efficiency", "efficient")]),
-
-            fill("hs8",
-                 prompt: "Installing proper insulation and energy-efficient appliances helps reduce energy ______ in residential areas.",
-                 blanks: [blank("consumption", "use", "usage")]),
-
-            fill("hs9",
-                 prompt: "Reusing water from household activities such as washing and bathing for other purposes is known as ______ recycling.",
-                 blanks: [blank("greywater", "grey water", "graywater", "gray water", "grey-water", "gray-water")]),
-
-            fill("hs10",
-                 prompt: "A housing development introduces solar panels, rainwater harvesting and recycled construction materials. These initiatives mainly contribute to ______ sustainability.",
-                 blanks: [blank("environmental", "environment")])
-        ]
     )
 
     // MARK: - 2. Urban studies
