@@ -54,7 +54,7 @@ class GeographyCurriculum: ObservableObject {
                 prompt: "A village develops tightly around a bridge and a central market square. What settlement pattern is this?",
                 options: ["Dispersed", "Linear", "Nucleated", "Conurbation"],
                 correctIndex: 2,
-                explanation: "Nucleated settlements cluster tightly around a central feature like a crossroads, water source, or bridge."
+                explanation: "Explanation: Nucleated settlements cluster tightly around a central feature like a crossroads, water source, or bridge because it provides shared social and economic benefits."
             )
         ),
         GeoQuest(
@@ -68,15 +68,14 @@ class GeographyCurriculum: ObservableObject {
             storyText: "We're mapping the feline kingdom from smallest to largest! Can you verify our Settlement Hierarchy?",
             fieldNotes: [
                 "Hierarchy (Smallest → Largest):",
-                "1. Isolated Dwelling (1–2 homes) → 2. Hamlet (few homes, no services)",
-                "3. Village (basic shop/post office) → 4. Small Town → 5. Large Town",
-                "6. City (universities, hospitals, major transport) → 7. Conurbation (merged cities)."
+                "1. Isolated Dwelling → 2. Hamlet → 3. Village",
+                "4. Small Town → 5. Large Town → 6. City → 7. Conurbation."
             ],
             question: GeoQuestion(
                 prompt: "When several expanding cities grow outward and merge into one continuous urban area, what is it called?",
                 options: ["Hamlet", "Conurbation", "Isolated Dwelling", "Village"],
                 correctIndex: 1,
-                explanation: "A conurbation forms when multiple towns or cities expand and merge together."
+                explanation: "Explanation: A conurbation forms when multiple previously separate towns or cities expand so much that they merge into a single massive urban zone."
             )
         ),
         GeoQuest(
@@ -90,7 +89,7 @@ class GeographyCurriculum: ObservableObject {
             storyText: "Cats travel 10 minutes for milk, but 2 hours for my rare Golden Tuna Sushi! Help me explain why.",
             fieldNotes: [
                 "• Low-Order Goods: Daily essentials (milk, bread). Small threshold population & small sphere of influence.",
-                "• High-Order Goods: Expensive/specialist items (luxury cars, specialist hospitals). Large threshold population & wide sphere of influence.",
+                "• High-Order Goods: Expensive/specialist items. Large threshold population & wide sphere of influence.",
                 "• Sphere of Influence: The geographic area served by a settlement or service."
             ],
             question: GeoQuestion(
@@ -102,7 +101,7 @@ class GeographyCurriculum: ObservableObject {
                     "Milk shops have a higher range"
                 ],
                 correctIndex: 1,
-                explanation: "High-order services require a large threshold population to survive, so customers travel long distances (large range)."
+                explanation: "Explanation: High-order services are rare, so customers are willing to travel much longer distances (greater range) to access them compared to everyday items."
             )
         ),
         GeoQuest(
@@ -116,7 +115,7 @@ class GeographyCurriculum: ObservableObject {
             storyText: "Look at the contrast across this border! High-rise towers on one side, open pastures on the other.",
             fieldNotes: [
                 "• Urban Areas: High population density, built-up infrastructure, secondary/tertiary jobs, higher land value.",
-                "• Rural Areas: Low population density, open countryside, primary sector jobs (farming, forestry), quieter environment."
+                "• Rural Areas: Low population density, open countryside, primary sector jobs (farming, forestry)."
             ],
             question: GeoQuestion(
                 prompt: "Which characteristic is typically associated with an URBAN area rather than a rural area?",
@@ -127,7 +126,7 @@ class GeographyCurriculum: ObservableObject {
                     "Lack of public transit networks"
                 ],
                 correctIndex: 2,
-                explanation: "Competition for limited space in urban centers drives up land values and leads to high-density vertical building."
+                explanation: "Explanation: High land values in cities drive developers to build vertically (skyscrapers) to maximize space usage."
             )
         ),
         GeoQuest(
@@ -140,20 +139,19 @@ class GeographyCurriculum: ObservableObject {
             position: CGPoint(x: 520, y: -420),
             storyText: "Storm surges are approaching! Our mangrove forest protects the coast, and each root type has a special superpower.",
             fieldNotes: [
-                "• Prop / Stilt Roots (e.g., Rhizophora): Arch above water to anchor trees in shifting mud and absorb oxygen.",
-                "• Pneumatophores / Pencil Roots (e.g., Avicennia): Grow vertically upward out of anaerobic mud like snorkels to breathe air.",
-                "• Buttress / Knee Roots: Broad plank-like roots that stabilize tall trees in shallow, waterlogged soil."
+                "• Prop Roots: Arch above water to anchor trees in shifting mud.",
+                "• Pneumatophores (Pencil Roots): Grow vertically upward out of anaerobic mud like snorkels to breathe air."
             ],
             question: GeoQuestion(
                 prompt: "Why do Avicennia mangroves grow vertical 'pencil roots' (pneumatophores) sticking straight up out of the mud?",
                 options: [
-                    "To trap floating plastic bottles",
+                    "To trap plastic bottles",
                     "To take in oxygen directly from the air because waterlogged mud lacks oxygen",
                     "To store freshwater during droughts",
                     "To repel crabs"
                 ],
                 correctIndex: 1,
-                explanation: "Waterlogged coastal mud is anaerobic (oxygen-poor), so pneumatophores act like snorkels to absorb oxygen during low tide."
+                explanation: "Explanation: Coastal mud is waterlogged and oxygen-poor (anaerobic), so pneumatophores act like botanical snorkels during low tide."
             )
         ),
         GeoQuest(
@@ -166,9 +164,9 @@ class GeographyCurriculum: ObservableObject {
             position: CGPoint(x: 0, y: -480),
             storyText: "Stray cats need affordable, green homes! Help me balance Social, Environmental, and Economic sustainability.",
             fieldNotes: [
-                "• Social Sustainability: Safe, affordable housing, community parks, healthcare & equality for all residents.",
-                "• Environmental Sustainability: Solar panels, rainwater harvesting, green roofs, zero waste & biodiversity.",
-                "• Economic Sustainability: Local green jobs, affordable energy bills, long-term financial viability."
+                "• Social: Safe, affordable housing and community parks.",
+                "• Environmental: Solar panels, rainwater harvesting, green roofs.",
+                "• Economic: Local green jobs and affordable energy bills."
             ],
             question: GeoQuestion(
                 prompt: "Installing solar panels and rainwater harvesting on affordable cat housing directly addresses which two pillars?",
@@ -179,7 +177,83 @@ class GeographyCurriculum: ObservableObject {
                     "High-order goods & Rural depopulation"
                 ],
                 correctIndex: 0,
-                explanation: "Solar power and rainwater harvesting protect ecosystems (Environmental) while reducing residents' monthly utility costs (Economic)."
+                explanation: "Explanation: Renewable energy and resource efficiency protect ecosystems (Environmental) while lowering monthly household expenses (Economic)."
+            )
+        ),
+        // --- BRAND NEW CHARACTERS ADDED BELOW ---
+        GeoQuest(
+            id: "microclimate",
+            title: "The Concrete Heat Trap",
+            topic: "Urban Microclimates & Heat Islands",
+            zoneName: "Meowtropolis CBD",
+            npcName: "Professor Felix",
+            npcShapeColor: "yellow",
+            position: CGPoint(x: 180, y: 500),
+            storyText: "It's way hotter in the downtown concrete plaza than it is in the grassy park! Why is city air so warm?",
+            fieldNotes: [
+                "• Urban Heat Island Effect: Cities are significantly warmer than surrounding rural areas due to dark asphalt, concrete, and lack of vegetation.",
+                "• Mitigation: Green roofs, street trees, and reflective cool pavements reduce urban temperatures."
+            ],
+            question: GeoQuestion(
+                prompt: "What is a major cause of the Urban Heat Island effect in city centers?",
+                options: [
+                    "An abundance of tall green forests and wetlands",
+                    "Dark asphalt and concrete surfaces absorbing and retaining solar heat",
+                    "Freezing mountain winds channeled down streets",
+                    "Constant ocean breezes"
+                ],
+                correctIndex: 1,
+                explanation: "Explanation: Dark building materials and paved roads absorb large amounts of solar radiation during the day and slowly release it as heat."
+            )
+        ),
+        GeoQuest(
+            id: "migration",
+            title: "Journey to the City",
+            topic: "Push & Pull Migration Factors",
+            zoneName: "Whispering Hills",
+            npcName: "Tabitha the Traveler",
+            npcShapeColor: "mint",
+            position: CGPoint(x: -250, y: 480),
+            storyText: "Many cats are leaving the quiet countryside for Meowtropolis. What forces are driving them to move?",
+            fieldNotes: [
+                "• Push Factors: Reasons encouraging people to leave rural areas (e.g., farm mechanization, lack of jobs, drought).",
+                "• Pull Factors: Attractions drawing people to cities (e.g., better jobs, universities, entertainment, healthcare)."
+            ],
+            question: GeoQuestion(
+                prompt: "Which of the following is considered a PULL factor drawing rural residents toward urban cities?",
+                options: [
+                    "Crop failure due to severe drought",
+                    "Availability of higher-paying jobs and tertiary education",
+                    "Isolation from hospitals and emergency services",
+                    "Lack of electricity in rural farmhouses"
+                ],
+                correctIndex: 1,
+                explanation: "Explanation: Employment opportunities and educational institutions act as powerful magnets (pull factors) attracting people to urban centers."
+            )
+        ),
+        GeoQuest(
+            id: "food_miles",
+            title: "The Global Fish Bowl",
+            topic: "Food Miles & Sustainable Consumption",
+            zoneName: "Solar Eco-District",
+            npcName: "Noodle the Chef Cat",
+            npcShapeColor: "indigo",
+            position: CGPoint(x: -350, y: -420),
+            storyText: "My canned fish was caught across the ocean and shipped thousands of miles! How does that impact our carbon footprint?",
+            fieldNotes: [
+                "• Food Miles: The distance food travels from the farm/ocean to your plate.",
+                "• Sustainable Eating: Buying locally grown food reduces transport emissions, saves energy, and supports local farmers."
+            ],
+            question: GeoQuestion(
+                prompt: "What is the primary environmental benefit of purchasing locally sourced food rather than imported food?",
+                options: [
+                    "It increases food miles and shipping fuel consumption",
+                    "It reduces carbon emissions associated with long-distance transportation",
+                    "It guarantees that crops require no water",
+                    "It eliminates the need for any packaging whatsoever"
+                ],
+                correctIndex: 1,
+                explanation: "Explanation: Shorter transport distances (fewer food miles) burn less fossil fuel, substantially lowering greenhouse gas emissions."
             )
         )
     ]
@@ -200,7 +274,7 @@ class GeographyCurriculum: ObservableObject {
                     "Removing greenbelts"
                 ],
                 correctIndex: 1,
-                explanation: "Integrated public transit moves more people per square meter with dramatically lower emissions per capita."
+                explanation: "Explanation: Public transit systems transport large numbers of citizens efficiently, drastically reducing per-capita vehicle emissions."
             )
         ),
         PollutionEnemy(
@@ -218,7 +292,7 @@ class GeographyCurriculum: ObservableObject {
                     "The soil becomes rich in oxygen"
                 ],
                 correctIndex: 1,
-                explanation: "Pneumatophores rely on tiny pores (lenticels) to breathe; oil clogs them and kills the tree."
+                explanation: "Explanation: Pneumatophores rely on open pores to exchange gases; oil seals them shut, cutting off oxygen and killing the tree."
             )
         ),
         PollutionEnemy(
@@ -236,7 +310,7 @@ class GeographyCurriculum: ObservableObject {
                     "An isolated farm"
                 ],
                 correctIndex: 1,
-                explanation: "Reusing brownfield sites prevents urban sprawl into greenfield (rural) land."
+                explanation: "Explanation: Redeveloping abandoned industrial or urban lots (brownfields) prevents cities from sprawling outward into greenfield rural lands."
             )
         )
     ]

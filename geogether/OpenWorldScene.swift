@@ -5,6 +5,7 @@ protocol OpenWorldDelegate: AnyObject {
     func didApproachQuest(_ quest: GeoQuest)
     func didApproachEnemy(_ enemy: PollutionEnemy)
     func didUpdateZone(_ zoneName: String)
+    func didUpdatePlayerPosition(_ position: CGPoint)
 }
 
 class OpenWorldScene: SKScene {
@@ -37,10 +38,11 @@ class OpenWorldScene: SKScene {
         border.lineWidth = 8
         addChild(border)
         
-        addZoneBackground(pos: CGPoint(x: -380, y: 320), color: SKColor(red: 0.22, green: 0.48, blue: 0.22, alpha: 1.0), title: "RURAL HILLS")
-        addZoneBackground(pos: CGPoint(x: 380, y: 320), color: SKColor(red: 0.23, green: 0.26, blue: 0.32, alpha: 1.0), title: "URBAN METROPOLIS")
-        addZoneBackground(pos: CGPoint(x: 380, y: -320), color: SKColor(red: 0.08, green: 0.32, blue: 0.38, alpha: 1.0), title: "MANGROVE ESTUARY")
-        addZoneBackground(pos: CGPoint(x: -380, y: -320), color: SKColor(red: 0.18, green: 0.40, blue: 0.30, alpha: 1.0), title: "ECO-DISTRICT")
+        // 4 Biomes with clear topic labels printed directly onto the map
+        addZoneBackground(pos: CGPoint(x: -380, y: 320), color: SKColor(red: 0.22, green: 0.48, blue: 0.22, alpha: 1.0), title: "RURAL HILLS", subtitle: "Topic: Settlement Patterns & Migration")
+        addZoneBackground(pos: CGPoint(x: 380, y: 320), color: SKColor(red: 0.23, green: 0.26, blue: 0.32, alpha: 1.0), title: "MEOWTROPOLIS CBD", subtitle: "Topic: Services, Hierarchy & Microclimates")
+        addZoneBackground(pos: CGPoint(x: 380, y: -320), color: SKColor(red: 0.08, green: 0.32, blue: 0.38, alpha: 1.0), title: "TIDAL MANGROVES", subtitle: "Topic: Coastal Ecosystems & Roots")
+        addZoneBackground(pos: CGPoint(x: -380, y: -320), color: SKColor(red: 0.18, green: 0.40, blue: 0.30, alpha: 1.0), title: "ECO-DISTRICT", subtitle: "Topic: Housing, Food Miles & Sustainability")
         
         let hRoad = SKShapeNode(rectOf: CGSize(width: 1400, height: 54))
         hRoad.fillColor = SKColor(white: 0.20, alpha: 0.9)
@@ -53,7 +55,7 @@ class OpenWorldScene: SKScene {
         addChild(vRoad)
     }
     
-    private func addZoneBackground(pos: CGPoint, color: SKColor, title: String) {
+    private func addZoneBackground(pos: CGPoint, color: SKColor, title: String, subtitle: String) {
         let zone = SKShapeNode(rectOf: CGSize(width: 680, height: 580), cornerRadius: 20)
         zone.position = pos
         zone.fillColor = color
@@ -63,12 +65,19 @@ class OpenWorldScene: SKScene {
         let label = SKLabelNode(text: title)
         label.fontName = "AvenirNext-Bold"
         label.fontSize = 18
-        label.fontColor = .white.withAlphaComponent(0.75)
-        label.position = CGPoint(x: pos.x, y: pos.y + 240)
+        label.fontColor = .white
+        label.position = CGPoint(x: pos.x, y: pos.y + 242)
         addChild(label)
+        
+        let subLabel = SKLabelNode(text: subtitle)
+        subLabel.fontName = "AvenirNext-Medium"
+        subLabel.fontSize = 12
+        subLabel.fontColor = .yellow
+        subLabel.position = CGPoint(x: pos.x, y: pos.y + 220)
+        addChild(subLabel)
     }
     
-    // Low-Poly Voxel Cat Node with solid black eyes
+    // Low-Poly Voxel Cat Node (Clean outlines, black eyes)
     private func createVoxelCatNode(color: SKColor, isMayor: Bool = false) -> SKNode {
         let cat = SKNode()
         
@@ -95,14 +104,15 @@ class OpenWorldScene: SKScene {
         rightEar.position = CGPoint(x: 12, y: 16)
         cat.addChild(rightEar)
         
-        // Solid black eyes
         let leftEye = SKShapeNode(rectOf: CGSize(width: 4, height: 4))
         leftEye.fillColor = .black
+        leftEye.strokeColor = .clear
         leftEye.position = CGPoint(x: -6, y: 2)
         cat.addChild(leftEye)
         
         let rightEye = SKShapeNode(rectOf: CGSize(width: 4, height: 4))
         rightEye.fillColor = .black
+        rightEye.strokeColor = .clear
         rightEye.position = CGPoint(x: 6, y: 2)
         cat.addChild(rightEye)
         
@@ -124,7 +134,7 @@ class OpenWorldScene: SKScene {
         return cat
     }
     
-    // Low-Poly Voxel Slime Node with solid black eyes
+    // Low-Poly Voxel Slime Node
     private func createVoxelSlimeNode() -> SKNode {
         let slime = SKNode()
         
@@ -133,19 +143,21 @@ class OpenWorldScene: SKScene {
         body.strokeColor = .clear
         slime.addChild(body)
         
-        // Solid black eyes
         let leftEye = SKShapeNode(rectOf: CGSize(width: 4, height: 4))
         leftEye.fillColor = .black
+        leftEye.strokeColor = .clear
         leftEye.position = CGPoint(x: -7, y: 3)
         slime.addChild(leftEye)
         
         let rightEye = SKShapeNode(rectOf: CGSize(width: 4, height: 4))
         rightEye.fillColor = .black
+        rightEye.strokeColor = .clear
         rightEye.position = CGPoint(x: 7, y: 3)
         slime.addChild(rightEye)
         
         let mouth = SKShapeNode(rectOf: CGSize(width: 12, height: 3))
         mouth.fillColor = .black
+        mouth.strokeColor = .clear
         mouth.position = CGPoint(x: 0, y: -4)
         slime.addChild(mouth)
         
@@ -185,7 +197,7 @@ class OpenWorldScene: SKScene {
             let npcSprite = createVoxelCatNode(color: quest.isCompleted ? .systemGreen : npcColor, isMayor: quest.id == "hierarchy")
             container.addChild(npcSprite)
             
-            let badge = SKLabelNode(text: quest.npcName)
+            let badge = SKLabelNode(text: quest.isCompleted ? "\(quest.npcName) (Mastered!)" : quest.npcName)
             badge.fontName = "AvenirNext-Bold"
             badge.fontSize = 12
             badge.fontColor = .white
@@ -195,6 +207,31 @@ class OpenWorldScene: SKScene {
             let floatUp = SKAction.moveBy(x: 0, y: 8, duration: 1.0)
             floatUp.timingMode = .easeInEaseOut
             container.run(SKAction.repeatForever(SKAction.sequence([floatUp, floatUp.reversed()])))
+            
+            if quest.isCompleted {
+                for i in 0..<3 {
+                    let helper = createVoxelCatNode(color: .systemYellow, isMayor: false)
+                    helper.setScale(0.65)
+                    let angle = CGFloat(i) * (2 * .pi / 3)
+                    helper.position = CGPoint(x: cos(angle) * 50, y: sin(angle) * 50)
+                    container.addChild(helper)
+                    
+                    let wander = SKAction.moveBy(x: cos(angle) * 18, y: sin(angle) * 18, duration: 1.6)
+                    helper.run(SKAction.repeatForever(SKAction.sequence([wander, wander.reversed()])))
+                }
+                
+                let house1 = SKShapeNode(rectOf: CGSize(width: 20, height: 18), cornerRadius: 3)
+                house1.fillColor = .brown
+                house1.strokeColor = .clear
+                house1.position = CGPoint(x: -55, y: 40)
+                container.addChild(house1)
+                
+                let house2 = SKShapeNode(rectOf: CGSize(width: 24, height: 22), cornerRadius: 3)
+                house2.fillColor = .orange
+                house2.strokeColor = .clear
+                house2.position = CGPoint(x: 55, y: 40)
+                container.addChild(house2)
+            }
             
             addChild(container)
         }
@@ -238,11 +275,13 @@ class OpenWorldScene: SKScene {
                 
                 let blockTrunk = SKShapeNode(rectOf: CGSize(width: 12, height: 22))
                 blockTrunk.fillColor = .brown
+                blockTrunk.strokeColor = .clear
                 blockTrunk.position = CGPoint(x: 0, y: -6)
                 container.addChild(blockTrunk)
                 
                 let blockLeaves = SKShapeNode(rectOf: CGSize(width: 30, height: 26), cornerRadius: 4)
                 blockLeaves.fillColor = .systemGreen
+                blockLeaves.strokeColor = .clear
                 blockLeaves.position = CGPoint(x: 0, y: 14)
                 container.addChild(blockLeaves)
                 
@@ -292,6 +331,7 @@ class OpenWorldScene: SKScene {
         )
         
         updateCurrentBiomeLabel()
+        worldDelegate?.didUpdatePlayerPosition(catPlayer.position)
         
         guard currentTime > cooldownTimer else { return }
         
@@ -317,10 +357,10 @@ class OpenWorldScene: SKScene {
     private func updateCurrentBiomeLabel() {
         let p = catPlayer.position
         let zone: String
-        if p.x < 0 && p.y >= 0 { zone = "Whispering Hills" }
-        else if p.x >= 0 && p.y >= 0 { zone = "Meowtropolis CBD" }
-        else if p.x >= 0 && p.y < 0 { zone = "Tidal Mangroves" }
-        else { zone = "Solar Eco-District" }
+        if p.x < 0 && p.y >= 0 { zone = "Whispering Hills (Settlement Patterns)" }
+        else if p.x >= 0 && p.y >= 0 { zone = "Meowtropolis CBD (Urban & Services)" }
+        else if p.x >= 0 && p.y < 0 { zone = "Tidal Mangroves (Coastal Ecosystems)" }
+        else { zone = "Eco-District (Sustainability & Housing)" }
         worldDelegate?.didUpdateZone(zone)
     }
 }
