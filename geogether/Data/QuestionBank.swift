@@ -53,6 +53,7 @@ enum QuestionBank {
                  blanks: [blank("social cohesion", "a sense of belonging")]),
 
 
+        ]
     )
 
     // MARK: - 2. Urban studies
