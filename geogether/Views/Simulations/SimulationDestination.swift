@@ -21,11 +21,11 @@ enum SimulationDestination: String, CaseIterable, Identifiable, Hashable {
 
     var subtitle: String {
         switch self {
-        case .urbanRural: return "Slide between two ways of life"
-        case .waterCycle: return "Track every drop from sea to sky and back"
-        case .settlements: return "Grow a settlement from a home to a city"
-        case .mangroveRoots: return "See how roots survive in soft, wet soil"
-        case .housing: return "Turn housing problems into practical solutions"
+        case .urbanRural: return "Compare homes, land and services"
+        case .waterCycle: return "Follow water through each stage of the cycle"
+        case .settlements: return "See how population and services change"
+        case .mangroveRoots: return "Find out what each type of root does"
+        case .housing: return "Add four changes to a neighbourhood"
         }
     }
 

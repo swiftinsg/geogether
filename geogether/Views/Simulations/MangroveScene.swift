@@ -90,7 +90,7 @@ struct MangroveScene: View {
                 )
             )
 
-            // 5. Mud / Sediment Cross-Section
+            // 5. Mud and sediment cross section
             let mudRect = CGRect(x: 0, y: mudY, width: w, height: h - mudY)
             context.fill(
                 Path(mudRect),
@@ -104,7 +104,7 @@ struct MangroveScene: View {
                 )
             )
 
-            // Small pebbles/shells in mud for cross-section realism
+            // Small pebbles and shells in the mud
             for i in 0..<14 {
                 let px = 22 + CGFloat(i) * (w - 44) / 13
                 let py = mudY + 14 + CGFloat(i % 3) * 16
@@ -140,7 +140,7 @@ struct MangroveScene: View {
                 cable.addLine(to: CGPoint(x: w - 24, y: mudY + 18))
                 context.stroke(cable, with: .color(darkBark), style: StrokeStyle(lineWidth: 8, lineCap: .round))
 
-                // Vertical pencil-like pneumatophores rising above water
+                // Thin pneumatophores rising above the water
                 for i in 0..<13 {
                     let x = 32 + CGFloat(i) * (w - 64) / 12
                     let tipY = waterY - CGFloat(14 + (i % 3) * 9) * scale

@@ -40,7 +40,7 @@ struct QuizQuestion: Identifiable, Hashable {
     }
 
     let id: String
-    /// Optional sub-heading inside a topic, e.g. "A. Settlements and settlement hierarchy".
+    /// Optional section inside a topic, e.g. "A. Settlements and settlement hierarchy".
     let section: String?
     let prompt: String
     let hint: String?
@@ -81,7 +81,7 @@ struct QuizQuestion: Identifiable, Hashable {
     }
 }
 
-/// One blank in a fill-in-the-blank question.
+/// One blank in a question.
 struct Blank: Hashable {
     /// Every spelling that should be accepted.
     let accepted: [String]

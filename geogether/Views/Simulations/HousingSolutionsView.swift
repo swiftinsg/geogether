@@ -1,6 +1,6 @@
 import SwiftUI
 
-// MARK: - 3. Sustainable Housing
+// MARK: 3. Sustainable housing
 
 struct HousingSolutionsView: View {
     @State private var progress = 0.0
@@ -12,7 +12,7 @@ struct HousingSolutionsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                Text("Move the slider to improve the neighbourhood.")
+                Text("Move the slider to add each improvement.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
@@ -39,7 +39,7 @@ struct HousingSolutionsView: View {
 
                 QuizCard {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text(solutionCount == 4 ? "The neighbourhood is ready" : "Add the next improvement")
+                        Text(solutionCount == 4 ? "All four improvements are in place" : "Next improvement")
                             .font(.headline)
                         if solutionCount == 0 {
                             Text(improvements[0])

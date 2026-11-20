@@ -1,6 +1,6 @@
 import SwiftUI
 
-// MARK: - 2. Mangrove Roots
+// MARK: 2. Mangrove roots
 
 struct MangroveRootsView: View {
     private enum RootType: String, CaseIterable, Identifiable {
@@ -12,8 +12,8 @@ struct MangroveRootsView: View {
 
         var detail: String {
             switch self {
-            case .prop: return "Arching roots spread the tree's weight and hold it upright in soft mud."
-            case .pneumatophore: return "Pencil-shaped roots grow above the waterlogged soil and take in oxygen through small pores."
+            case .prop: return "These wide, arching roots spread the tree's weight and hold it upright in soft mud."
+            case .pneumatophore: return "These thin roots grow above the waterlogged soil. Small pores take in oxygen from the air."
             case .knee: return "Sections of root rise above the mud like knees. They help with gas exchange and stability."
             }
         }

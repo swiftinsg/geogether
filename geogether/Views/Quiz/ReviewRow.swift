@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// One line of the end-of-quiz review.
+/// One line in the quiz review.
 struct ReviewRow: View {
     let number: Int
     let question: QuizQuestion

@@ -115,7 +115,7 @@ struct QuizView: View {
 
     private var isShortAnswer: Bool { session.currentQuestion.modelAnswer != nil }
 
-    /// A short-answer question whose model answer is showing, waiting to be self-marked.
+    /// A written question waiting for the learner to mark it.
     private var awaitingSelfMark: Bool {
         isShortAnswer && session.currentAttempt.revealed && session.currentAttempt.status == .unchecked
     }

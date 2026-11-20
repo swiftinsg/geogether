@@ -27,7 +27,7 @@ struct FeedbackView: View {
                             .font(.subheadline)
                             .foregroundStyle(.primary)
                     } else {
-                        Text("Well done — that's the right answer.")
+                        Text("That's right.")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }

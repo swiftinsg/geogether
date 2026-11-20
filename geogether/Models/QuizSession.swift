@@ -14,7 +14,7 @@ final class QuizSession: ObservableObject {
     struct Attempt: Equatable {
         var texts: [String] = []
         var order: [String] = []
-        /// True once the model answer of a short-answer question has been shown.
+        /// True once the model answer for a written question has been shown.
         var revealed = false
         var status: Status = .unchecked
     }
@@ -42,7 +42,7 @@ final class QuizSession: ObservableObject {
     var isLastQuestion: Bool { index == questions.count - 1 }
 
     /// The Check button is only enabled once every blank / slot is filled in.
-    /// Short-answer questions can always be revealed.
+    /// Written answers can always be revealed.
     var canCheck: Bool {
         guard currentAttempt.status == .unchecked else { return false }
         switch currentQuestion.kind {
@@ -69,13 +69,13 @@ final class QuizSession: ObservableObject {
         updateCurrent { $0.status = correct ? .correct : .incorrect }
     }
 
-    /// Shows the model answer of a short-answer question.
+    /// Shows the model answer for a written question.
     func revealAnswer() {
         guard currentQuestion.modelAnswer != nil, currentAttempt.status == .unchecked else { return }
         updateCurrent { $0.revealed = true }
     }
 
-    /// Records the learner's own judgement of a short-answer question.
+    /// Records the learner's own judgement of a written answer.
     func selfMark(_ correct: Bool) {
         guard currentQuestion.modelAnswer != nil else { return }
         updateCurrent { $0.status = correct ? .correct : .incorrect }

@@ -1,13 +1,13 @@
 import SwiftUI
 
-/// Drag-to-compare lesson adapted from the urban and rural prototype.
+/// Comparison adapted from the urban and rural prototype.
 struct HousingCompareView: View {
     @State private var split = 0.5
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text("Drag the divider to compare the two environments.")
+                Text("Drag the divider to compare urban and rural areas.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 

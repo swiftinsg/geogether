@@ -2,9 +2,9 @@ import Foundation
 
 /// The full Geography simulation question bank.
 ///
-/// 6 topics, 101 questions in total:
-/// 1. Sustainable development of housing (10)
-/// 2. Urban studies (15, in three sections A–C)
+/// 6 topics, 96 questions in total:
+/// 1. Sustainable development of housing (5)
+/// 2. Urban studies (15, in sections A to C)
 /// 3. Tropical rainforests (12, short answer)
 /// 4. Hydrological cycle and water (14, short answer)
 /// 5. Population growth and density (25, easy → hard)
@@ -33,23 +33,23 @@ enum QuestionBank {
         tint: .orange,
         questions: [
             fill("hs1",
-                 prompt: "What is one improvement we can make that contributes to sustainable housing?",
+                 prompt: "Name one change that can make housing more sustainable.",
                  blanks: [blank("waste disposal", "waste disposals", "public transport","sewage disposals","public transports", "solar power", "rainwater collection")]),
 
             fill("hs2",
-                 prompt: "What is one more improvement we can make that contributes to sustainable housing?",
+                 prompt: "Give another way to make housing more sustainable.",
                  blanks: [blank("waste disposal", "waste disposals", "public transport","sewage disposals","public transports", "solar power", "rainwater collection")]),
 
             fill("hs3",
-                 prompt: "What is one more improvement we can make that contributes to sustainable housing?",
+                 prompt: "Name a third improvement that can make housing more sustainable.",
                  blanks: [blank("waste disposal", "waste disposals", "public transport","sewage disposals","public transports", "solar power", "rainwater collection")]),
 
             fill("hs4",
-                 prompt: "Extra: Improper waste and sewage disposal can increase the chances of _____",
+                 prompt: "Extra question. Poor waste and sewage disposal can increase the risk of _____",
                  blanks: [blank("disease", "diseases","sickness")]),
 
             fill("hs5",
-                 prompt: "Extra: Shared spaces such as parks and community centres help promote ______ by encouraging interaction between neighbours.",
+                 prompt: "Extra question. Parks and other shared spaces can build ______ by giving neighbours places to meet.",
                  blanks: [blank("social cohesion", "a sense of belonging")]),
 
 
@@ -103,12 +103,12 @@ enum QuestionBank {
 
         fill("us7",
              section: "B. Key geographical concepts",
-             prompt: "Bread, milk and stationery are examples of ______-order goods because they are purchased frequently.",
+             prompt: "Bread, milk and stationery are examples of ______ order goods because people buy them often.",
              blanks: [blank("low", "lower")]),
 
         fill("us8",
              section: "B. Key geographical concepts",
-             prompt: "Specialised surgery and university education are examples of ______-order goods.",
+             prompt: "Specialised surgery and university education are examples of ______ order goods.",
              blanks: [blank("high", "higher")]),
 
         fill("us9",
@@ -159,52 +159,52 @@ enum QuestionBank {
         tint: .green,
         questions: [
             shortAnswer("trf1",
-                        prompt: "What is the specific latitudinal distribution of tropical rainforests?",
-                        answer: "They are located between 10°N and 10°S of the Equator."),
+                        prompt: "Between which latitudes are most tropical rainforests found?",
+                        answer: "Most tropical rainforests lie between 10°N and 10°S of the Equator."),
 
             shortAnswer("trf2",
-                        prompt: "Name three specific examples of tropical rainforests and their locations.",
+                        prompt: "Name three tropical rainforests and state where each one is found.",
                         answer: "The Amazon Rainforest in South America, the Congo River Basin Rainforest in West and Central Africa, and the Kalimantan Rainforest in Indonesia."),
 
             shortAnswer("trf3",
-                        prompt: "What defines the temperature profile of an equatorial climate?",
-                        answer: "High temperatures all year round with a mean annual temperature above 26°C and a small annual temperature range of 2–3°C."),
+                        prompt: "What are temperatures like in an equatorial climate?",
+                        answer: "Temperatures stay high all year. The annual mean is above 26°C, and the annual range is only 2 to 3°C."),
 
             shortAnswer("trf4",
-                        prompt: "What is the typical rainfall pattern in areas that support tropical rainforests?",
-                        answer: "They receive high annual rainfall of more than 2000 mm, which is well distributed throughout the year, with each month receiving at least 150 mm."),
+                        prompt: "How much rain do tropical rainforests receive, and how is it spread through the year?",
+                        answer: "They receive more than 2000 mm of rain a year. Rain falls throughout the year, with at least 150 mm each month."),
 
             shortAnswer("trf5",
                         prompt: "What does it mean for a tropical rainforest to be \"evergreen\"?",
-                        answer: "Trees do not shed all of their leaves at particular times of the year; instead, plants continuously grow new leaves to replace older ones that die and fall off."),
+                        answer: "The trees do not lose all their leaves in one season. New leaves grow throughout the year as old ones fall."),
 
             shortAnswer("trf6",
-                        prompt: "What are the five distinct vertical layers of a tropical rainforest?",
-                        answer: "Emergent, Canopy, Understorey, Shrub layer and Ground layer (forest floor)."),
+                        prompt: "Name the five layers of a tropical rainforest.",
+                        answer: "The five layers are the emergent layer, canopy, understorey, shrub layer and ground layer, also called the forest floor."),
 
             shortAnswer("trf7",
-                        prompt: "What are the physical characteristics of trees in the Emergent layer?",
-                        answer: "They have tall, straight and smooth trunks with few branches, reaching heights greater than 30 m, and sometimes up to 50–80 m."),
+                        prompt: "What do trees in the emergent layer look like?",
+                        answer: "They have tall, straight, smooth trunks with few branches. They grow above 30 m and may reach 50 to 80 m."),
 
             shortAnswer("trf8",
-                        prompt: "How dense is the Canopy layer, and what is its effect on sunlight?",
-                        answer: "It consists of densely grown trees whose crowns interlock to form an almost continuous cover, blocking out 97% to 98% of sunlight."),
+                        prompt: "How does the canopy affect the sunlight below it?",
+                        answer: "The crowns of closely packed trees overlap to form an almost continuous cover. The canopy blocks 97% to 98% of sunlight."),
 
             shortAnswer("trf9",
                         prompt: "What are lianas?",
-                        answer: "Thick, woody vines that grow on the ground and twine up trees to reach for sunlight."),
+                        answer: "Lianas are thick, woody vines. They start on the ground and climb trees to reach sunlight."),
 
             shortAnswer("trf10",
-                        prompt: "How do epiphytes survive in the rainforest, and what are some examples?",
-                        answer: "Epiphytes grow directly on trees to receive more sunlight. Examples include ferns (such as the Staghorn fern and Bird's Nest fern), orchids, mosses and lichens."),
+                        prompt: "Where do epiphytes grow, and what are some examples?",
+                        answer: "Epiphytes grow on trees where they can get more sunlight. Examples include staghorn and bird's nest ferns, orchids, mosses and lichens."),
 
             shortAnswer("trf11",
                         prompt: "Why is vegetation sparse and poorly developed on the forest floor?",
-                        answer: "Because of the lack of sunlight passing through the continuous canopy layer above."),
+                        answer: "Very little sunlight passes through the canopy, so few plants can grow on the forest floor."),
 
             shortAnswer("trf12",
                         prompt: "Why is the layer of leaf litter on the forest floor so thin?",
-                        answer: "The hot and wet environment causes rapid decomposition of the dead leaves.")
+                        answer: "Heat and moisture help dead leaves decompose quickly.")
         ]
     )
 
@@ -219,35 +219,35 @@ enum QuestionBank {
         questions: [
             shortAnswer("hy1",
                         prompt: "What is evaporation?",
-                        answer: "The process in which water in liquid form changes into a gaseous or vapour state."),
+                        answer: "Evaporation happens when liquid water changes into water vapour."),
 
             shortAnswer("hy2",
                         prompt: "How do plants contribute water vapour to the atmosphere?",
-                        answer: "Through transpiration, a process where vegetation loses water in the form of water vapour through the stomata of its leaves."),
+                        answer: "Plants release water vapour through tiny openings in their leaves. This process is called transpiration."),
 
             shortAnswer("hy3",
                         prompt: "How does temperature affect the air's capacity to hold water vapour?",
-                        answer: "When air becomes warmer, it expands and its capacity to hold water vapour rises, meaning warm air can hold more water vapour than cold air."),
+                        answer: "Warm air can hold more water vapour than cold air."),
 
             shortAnswer("hy4",
                         prompt: "What is the dew point?",
-                        answer: "The temperature at which the air is saturated and is holding all the water vapour it can hold."),
+                        answer: "The dew point is the temperature at which air becomes saturated and cannot hold any more water vapour."),
 
             shortAnswer("hy5",
                         prompt: "What happens during the process of condensation?",
-                        answer: "Water vapour changes to a liquid state, turning into water droplets that eventually coalesce to form clouds."),
+                        answer: "Water vapour cools and changes into liquid droplets. The droplets gather to form clouds."),
 
             shortAnswer("hy6",
                         prompt: "What triggers rain to fall from clouds?",
-                        answer: "Upon further condensation, the water droplets in the clouds become too heavy to remain suspended in the air."),
+                        answer: "Cloud droplets join together until they become too heavy to stay in the air, then they fall as rain."),
 
             shortAnswer("hy7",
                         prompt: "What happens to water during infiltration?",
-                        answer: "It is the portion of water that reaches the ground and soaks into the soil."),
+                        answer: "Water on the ground soaks into the soil."),
 
             shortAnswer("hy8",
                         prompt: "What is percolation, and what does it create over time?",
-                        answer: "It is the movement of water further down underground. Continuous percolation results in large amounts of underground water collecting on top of an impermeable rock layer."),
+                        answer: "Percolation is the movement of water deeper through soil and rock. Over time, groundwater collects above an impermeable rock layer."),
 
             shortAnswer("hy9",
                         prompt: "What is the surface level of this collected groundwater called?",
@@ -255,23 +255,23 @@ enum QuestionBank {
 
             shortAnswer("hy10",
                         prompt: "Under what conditions does surface runoff occur?",
-                        answer: "When rainfall exceeds the infiltration rate, or in areas with impermeable concrete surfaces and sparse vegetation."),
+                        answer: "Surface runoff occurs when rain falls faster than the ground can absorb it. It also occurs where concrete or little vegetation stops water from soaking in."),
 
             shortAnswer("hy11",
                         prompt: "What is a drainage basin?",
-                        answer: "An area of land drained by a river and its tributaries, also known as a catchment area."),
+                        answer: "A drainage basin is the area of land drained by a river and its tributaries. It is also called a catchment area."),
 
             shortAnswer("hy12",
                         prompt: "What geographic feature separates one drainage basin from another?",
-                        answer: "A watershed, which is a boundary that lies along the tops of slopes."),
+                        answer: "A watershed separates drainage basins. It follows the highest land between them."),
 
             shortAnswer("hy13",
                         prompt: "Define the source and mouth of a river.",
-                        answer: "The source is the river's beginning, and the mouth is where the river empties its water into lakes, seas or oceans."),
+                        answer: "The source is where a river begins. The mouth is where it flows into a lake, sea or ocean."),
 
             shortAnswer("hy14",
                         prompt: "What is a river confluence?",
-                        answer: "The exact point where two rivers or streams meet.")
+                        answer: "A confluence is the point where two rivers or streams meet.")
         ]
     )
 
@@ -387,7 +387,7 @@ enum QuestionBank {
 
         fill("p19",
              section: "Hard",
-             prompt: "When people move from rural areas to urban areas in search of better employment opportunities, this is known as rural-to-urban ______.",
+             prompt: "When people move from rural areas to urban areas for better job opportunities, this is called rural to urban ______.",
              blanks: [blank("migration", "migrating", "migrate")]),
 
         fill("p20",
@@ -454,7 +454,7 @@ enum QuestionBank {
              section: "Easy",
              prompt: "Walking, cycling and using public transport are examples of more ______ forms of transport.",
              hint: "They can be kept up without harming the environment.",
-             blanks: [blank("sustainable", "green", "eco-friendly", "environmentally friendly")]),
+             blanks: [blank("sustainable", "green", "eco friendly", "environmentally friendly")]),
 
         fill("t5",
              section: "Easy",
@@ -543,7 +543,7 @@ enum QuestionBank {
         fill("t21",
              section: "Hard",
              prompt: "A city wants to reduce air pollution caused by vehicles. It encourages residents to use bicycles and public transport. These are examples of ______ transport methods.",
-             blanks: [blank("sustainable", "green", "eco-friendly", "environmentally friendly")]),
+             blanks: [blank("sustainable", "green", "eco friendly", "environmentally friendly")]),
 
         fill("t22",
              section: "Hard",
@@ -562,7 +562,7 @@ enum QuestionBank {
 
         fill("t25",
              section: "Hard",
-             prompt: "A well-connected transport network allows people to reach their destinations more easily, improving overall transport ______.",
+             prompt: "A transport network with good links makes places easier to reach, improving transport ______.",
              blanks: [blank("accessibility", "access", "connectivity")])
     ]
 

@@ -135,7 +135,7 @@ struct QuestionCardView: View {
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
 
-            TextField("Write what you remember, then show the model answer", text: textBinding(0), axis: .vertical)
+            TextField("Write what you remember", text: textBinding(0), axis: .vertical)
                 .lineLimit(3...6)
                 .disabled(isLocked)
                 .font(.body)

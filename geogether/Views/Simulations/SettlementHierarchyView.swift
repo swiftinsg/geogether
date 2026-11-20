@@ -1,6 +1,6 @@
 import SwiftUI
 
-// MARK: - 1. Settlement Hierarchy
+// MARK: 1. Settlement hierarchy
 
 struct SettlementHierarchyView: View {
     private struct Level {
@@ -12,13 +12,13 @@ struct SettlementHierarchyView: View {
     }
 
     private let levels = [
-        Level(name: "Isolated dwelling", population: "One household", services: "Residents travel elsewhere for most services.", buildings: 1, symbol: "house.fill"),
-        Level(name: "Hamlet", population: "A few households", services: "Few or no permanent services.", buildings: 3, symbol: "house.fill"),
-        Level(name: "Village", population: "Hundreds", services: "A shop, primary school or place of worship may serve the area.", buildings: 6, symbol: "house.lodge.fill"),
-        Level(name: "Small town", population: "Thousands", services: "More shops, schools and local transport become available.", buildings: 10, symbol: "building.2.fill"),
-        Level(name: "Large town", population: "Tens of thousands", services: "Residents can use hospitals, larger shops and more transport links.", buildings: 14, symbol: "building.2.fill"),
-        Level(name: "City", population: "Hundreds of thousands", services: "Universities, specialist healthcare and major business districts serve a wide area.", buildings: 18, symbol: "building.columns.fill"),
-        Level(name: "Conurbation", population: "Millions", services: "Several urban areas join to form one continuous built-up area.", buildings: 22, symbol: "building.2.crop.circle.fill")
+        Level(name: "Isolated dwelling", population: "One household", services: "People travel to another settlement for most services.", buildings: 1, symbol: "house.fill"),
+        Level(name: "Hamlet", population: "A few households", services: "There are few permanent services, if any.", buildings: 3, symbol: "house.fill"),
+        Level(name: "Village", population: "Hundreds", services: "There may be a shop, primary school or place of worship.", buildings: 6, symbol: "house.lodge.fill"),
+        Level(name: "Small town", population: "Thousands", services: "It has more shops, schools and local transport.", buildings: 10, symbol: "building.2.fill"),
+        Level(name: "Large town", population: "Tens of thousands", services: "It has hospitals, larger shops and more transport links.", buildings: 14, symbol: "building.2.fill"),
+        Level(name: "City", population: "Hundreds of thousands", services: "It has universities, specialist healthcare and major business districts.", buildings: 18, symbol: "building.columns.fill"),
+        Level(name: "Conurbation", population: "Millions", services: "Several urban areas have grown until they meet.", buildings: 22, symbol: "building.2.crop.circle.fill")
     ]
 
     @State private var position = 0.0
@@ -29,7 +29,7 @@ struct SettlementHierarchyView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                Text("Move the slider and watch the settlement grow.")
+                Text("Move the slider to compare seven settlement sizes.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 

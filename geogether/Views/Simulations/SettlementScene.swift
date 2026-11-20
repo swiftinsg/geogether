@@ -57,7 +57,7 @@ struct SettlementScene: View {
                 frontHill.closeSubpath()
                 context.fill(frontHill, with: .color(Color(red: 0.33, green: 0.65, blue: 0.32)))
 
-                // Dirt path (levels 0-2) or Paved Road (levels 3+)
+                // Dirt path for levels 0 to 2, paved road for level 3 and above
                 let groundY = h * 0.84
                 if level < 3 {
                     var dirtPath = Path()

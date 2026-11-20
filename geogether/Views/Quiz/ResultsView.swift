@@ -59,10 +59,10 @@ struct ResultsView: View {
 
     private var headline: String {
         switch fraction {
-        case 1:            return "Perfect score!"
-        case 0.8..<1:      return "Great work!"
-        case 0.6..<0.8:    return "Good effort"
-        default:           return "Keep practising"
+        case 1:            return "You got every question right"
+        case 0.8..<1:      return "Almost a perfect score"
+        case 0.6..<0.8:    return "You know most of this topic"
+        default:           return "This topic needs another look"
         }
     }
 

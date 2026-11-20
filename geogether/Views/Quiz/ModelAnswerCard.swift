@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Reveals the model answer of a short-answer question.
+/// Shows the model answer for a written question.
 struct ModelAnswerCard: View {
     let modelAnswer: String
     let tint: Color
@@ -16,7 +16,7 @@ struct ModelAnswerCard: View {
                 .lineSpacing(4)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text("Mark yourself honestly using the buttons below.")
+            Text("Compare it with your answer, then mark your attempt below.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
         }

@@ -22,7 +22,7 @@ struct TopicListView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
-                    Text("Choose your next challenge")
+                    Text("What do you want to explore?")
                         .font(.system(size: 34, weight: .bold, design: .rounded))
                         .foregroundStyle(AppPalette.navy)
 

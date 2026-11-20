@@ -64,7 +64,7 @@ struct WelcomeView: View {
                         showTopics = true
                     }
                 } label: {
-                    Text("Continue your adventure")
+                    Text("Start learning")
                         .font(.headline)
                         .foregroundStyle(AppPalette.blue)
                         .padding(.horizontal, 28)
