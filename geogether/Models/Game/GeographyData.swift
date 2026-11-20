@@ -34,7 +34,9 @@ struct PollutionEnemy: Identifiable {
     var isPurified: Bool = false
 }
 
-class GeographyCurriculum: ObservableObject {
+final class GeographyCurriculum: ObservableObject {
+    @Published private(set) var playerLevel = 1
+
     @Published var quests: [GeoQuest] = [
         GeoQuest(
             id: "patterns",
@@ -181,6 +183,83 @@ class GeographyCurriculum: ObservableObject {
                 correctIndex: 0,
                 explanation: "Solar power and rainwater harvesting protect ecosystems (Environmental) while reducing residents' monthly utility costs (Economic)."
             )
+        ),
+        GeoQuest(
+            id: "microclimate",
+            title: "The Concrete Heat Trap",
+            topic: "Urban Heat Islands",
+            zoneName: "Meowtropolis CBD",
+            npcName: "Professor Felix",
+            npcShapeColor: "yellow",
+            position: CGPoint(x: 180, y: 500),
+            storyText: "The city centre stays warmer than the park, even after sunset. Professor Felix is measuring where that heat comes from.",
+            fieldNotes: [
+                "Dark roads and buildings absorb solar energy during the day and release it as heat.",
+                "Cities have less vegetation, so they lose the cooling effect of shade and evapotranspiration.",
+                "Trees, green roofs and reflective surfaces can reduce urban temperatures."
+            ],
+            question: GeoQuestion(
+                prompt: "What is a major cause of the urban heat island effect?",
+                options: [
+                    "Large areas of dark asphalt and concrete",
+                    "Too many wetlands in the city centre",
+                    "Cold winds trapped between buildings",
+                    "More rainfall over rural land"
+                ],
+                correctIndex: 0,
+                explanation: "Dark paved surfaces absorb and store more solar energy than vegetation, then release that energy as heat."
+            )
+        ),
+        GeoQuest(
+            id: "migration",
+            title: "Journey to the City",
+            topic: "Push and Pull Factors",
+            zoneName: "Whispering Hills",
+            npcName: "Tabitha the Traveller",
+            npcShapeColor: "mint",
+            position: CGPoint(x: -250, y: 480),
+            storyText: "Tabitha is leaving the countryside for Meowtropolis. She wants to understand which conditions pushed her away and which opportunities pulled her toward the city.",
+            fieldNotes: [
+                "Push factors make people want to leave a place, such as drought, few jobs or poor access to services.",
+                "Pull factors attract people to a place, such as work, education, healthcare or safer housing."
+            ],
+            question: GeoQuestion(
+                prompt: "Which option is a pull factor attracting people to a city?",
+                options: [
+                    "Crop failure after a drought",
+                    "Higher-paying jobs and universities",
+                    "Poor access to hospitals",
+                    "A shortage of rural electricity"
+                ],
+                correctIndex: 1,
+                explanation: "Jobs and education are opportunities that attract people toward cities, so they are pull factors."
+            )
+        ),
+        GeoQuest(
+            id: "food_miles",
+            title: "The Global Fish Bowl",
+            topic: "Food Miles",
+            zoneName: "Solar Eco-District",
+            npcName: "Noodle the Chef Cat",
+            npcShapeColor: "indigo",
+            position: CGPoint(x: -350, y: -420),
+            storyText: "Noodle is comparing local fish with food shipped across the ocean. The journey changes the meal's transport emissions.",
+            fieldNotes: [
+                "Food miles measure how far food travels between its source and the consumer.",
+                "Shorter transport routes usually use less fuel and produce fewer transport emissions.",
+                "Season, farming method and storage also affect a food's total environmental impact."
+            ],
+            question: GeoQuestion(
+                prompt: "Why can locally sourced food have lower transport emissions?",
+                options: [
+                    "It travels a shorter distance",
+                    "It never needs packaging",
+                    "It grows without water",
+                    "It always arrives by plane"
+                ],
+                correctIndex: 0,
+                explanation: "A shorter journey generally burns less transport fuel, which reduces the emissions linked to delivery."
+            )
         )
     ]
 
@@ -247,5 +326,26 @@ class GeographyCurriculum: ObservableObject {
 
     var totalCount: Int {
         quests.count + enemies.count
+    }
+
+    @discardableResult
+    func completeQuest(id: String) -> Bool {
+        guard let index = quests.firstIndex(where: { $0.id == id }), !quests[index].isCompleted else {
+            return false
+        }
+
+        quests[index].isCompleted = true
+        playerLevel += 1
+        return true
+    }
+
+    @discardableResult
+    func purifyEnemy(id: String) -> Bool {
+        guard let index = enemies.firstIndex(where: { $0.id == id }), !enemies[index].isPurified else {
+            return false
+        }
+
+        enemies[index].isPurified = true
+        return true
     }
 }
