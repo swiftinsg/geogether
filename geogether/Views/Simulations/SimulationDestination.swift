@@ -1,6 +1,7 @@
 import SwiftUI
 
 enum SimulationDestination: String, CaseIterable, Identifiable, Hashable {
+    case geoWorld
     case urbanRural
     case waterCycle
     case settlements
@@ -11,6 +12,7 @@ enum SimulationDestination: String, CaseIterable, Identifiable, Hashable {
 
     var title: String {
         switch self {
+        case .geoWorld: return "GeoPaws open world"
         case .urbanRural: return "Urban and rural"
         case .waterCycle: return "Water distribution"
         case .settlements: return "Settlement hierarchy"
@@ -21,6 +23,7 @@ enum SimulationDestination: String, CaseIterable, Identifiable, Hashable {
 
     var subtitle: String {
         switch self {
+        case .geoWorld: return "Explore the map, meet characters and complete quests"
         case .urbanRural: return "Compare homes, land and services"
         case .waterCycle: return "Follow water through each stage of the cycle"
         case .settlements: return "See how population and services change"
@@ -31,6 +34,7 @@ enum SimulationDestination: String, CaseIterable, Identifiable, Hashable {
 
     var symbol: String {
         switch self {
+        case .geoWorld: return "gamecontroller.fill"
         case .urbanRural: return "building.2.fill"
         case .waterCycle: return "drop.fill"
         case .settlements: return "house.fill"
@@ -41,6 +45,7 @@ enum SimulationDestination: String, CaseIterable, Identifiable, Hashable {
 
     var tint: Color {
         switch self {
+        case .geoWorld: return .indigo
         case .urbanRural: return .purple
         case .waterCycle: return .blue
         case .settlements: return Color(red: 0.04, green: 0.47, blue: 0.51)
@@ -52,6 +57,7 @@ enum SimulationDestination: String, CaseIterable, Identifiable, Hashable {
     @ViewBuilder
     var view: some View {
         switch self {
+        case .geoWorld: GeoWorldView()
         case .urbanRural: HousingCompareView()
         case .waterCycle: WaterCycleView()
         case .settlements: SettlementHierarchyView()

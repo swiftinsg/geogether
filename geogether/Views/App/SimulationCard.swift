@@ -38,6 +38,6 @@ struct SimulationCard: View {
         .shadow(color: .black.opacity(0.06), radius: 16, y: 7)
         .contentShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
         .accessibilityElement(children: .combine)
-        .accessibilityHint("Opens the simulation")
+        .accessibilityHint(destination == .geoWorld ? "Opens GeogWorld" : "Opens the simulation")
     }
 }
