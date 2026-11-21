@@ -4,10 +4,14 @@ struct GameControlsView: View {
     let onMove: (CGVector) -> Void
     let openSimulations: () -> Void
     let openQuickStudy: () -> Void
+    let movementResetID: Int
+    let isMovementEnabled: Bool
 
     var body: some View {
         HStack(alignment: .bottom) {
             VirtualJoystick(onMove: onMove)
+                .id(movementResetID)
+                .allowsHitTesting(isMovementEnabled)
 
             Spacer(minLength: 12)
 

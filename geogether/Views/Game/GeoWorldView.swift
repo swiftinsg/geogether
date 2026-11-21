@@ -15,6 +15,7 @@ struct GeoWorldView: View {
     @State private var currentZone = "Central Crossroads"
     @State private var playerPosition = CGPoint.zero
     @State private var pressedKeys: Set<KeyEquivalent> = []
+    @State private var movementResetID = 0
 
     @FocusState private var isGameFocused: Bool
 
@@ -44,7 +45,9 @@ struct GeoWorldView: View {
                 GameControlsView(
                     onMove: movePlayer,
                     openSimulations: openSimulations,
-                    openQuickStudy: openQuickStudy
+                    openQuickStudy: openQuickStudy,
+                    movementResetID: movementResetID,
+                    isMovementEnabled: canMovePlayer
                 )
             }
             .padding()
@@ -88,7 +91,7 @@ struct GeoWorldView: View {
     }
 
     private func handleKeyPress(_ press: KeyPress) -> KeyPress.Result {
-        guard !showInstructions else { return .ignored }
+        guard canMovePlayer else { return .ignored }
 
         if press.phase == .down {
             pressedKeys.insert(press.key)
@@ -109,7 +112,36 @@ struct GeoWorldView: View {
     }
 
     private func movePlayer(_ vector: CGVector) {
+        guard canMovePlayer else {
+            scene.movementVector = .zero
+            return
+        }
         scene.movementVector = vector
+    }
+
+    private var canMovePlayer: Bool {
+        activeQuest == nil &&
+            activeEnemy == nil &&
+            !showInstructions &&
+            !showFieldGuide &&
+            !showQuickStudy &&
+            !showSimulationPicker
+    }
+
+    private func stopPlayerMovement() {
+        scene.movementVector = .zero
+        pressedKeys.removeAll()
+        movementResetID += 1
+    }
+
+    private func beginQuestEncounter(_ quest: GeoQuest) {
+        stopPlayerMovement()
+        activeQuest = quest
+    }
+
+    private func beginEnemyEncounter(_ enemy: PollutionEnemy) {
+        stopPlayerMovement()
+        activeEnemy = enemy
     }
 
     private func completeQuest(id: String) {
@@ -161,11 +193,11 @@ struct GeoWorldView: View {
         var parent: GeoWorldView?
 
         func didApproachQuest(_ quest: GeoQuest) {
-            DispatchQueue.main.async { self.parent?.activeQuest = quest }
+            DispatchQueue.main.async { self.parent?.beginQuestEncounter(quest) }
         }
 
         func didApproachEnemy(_ enemy: PollutionEnemy) {
-            DispatchQueue.main.async { self.parent?.activeEnemy = enemy }
+            DispatchQueue.main.async { self.parent?.beginEnemyEncounter(enemy) }
         }
 
         func didUpdateZone(_ zoneName: String) {

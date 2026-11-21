@@ -34,6 +34,12 @@ The remote `main` branch replaced most of the existing app with a standalone Geo
 - Added a simulation picker that opens the five main-app simulations without leaving GeogWorld.
 - Embedded each related simulation directly below the character's study notes.
 - Prevented a character encounter from reopening until the player moves away from that character.
+- Reset joystick and keyboard movement as soon as a character or pollution encounter opens.
+- Added animated scenery to every map district:
+  - Hills, trees and houses in the rural district
+  - Buildings and lit windows in Meowtropolis
+  - Water, mangrove trees, exposed roots and reeds in the mangrove district
+  - Solar homes, gardens and wind turbines in the eco-district
 - Changed the current-location text in the GeoPaws HUD to black.
 - Reworked character encounters into this order:
   1. Study content
@@ -81,6 +87,7 @@ The remote `main` branch replaced most of the existing app with a standalone Geo
 
 - The combined project builds successfully for the iOS Simulator.
 - The 21 November GeoPaws encounter and inline-simulation changes build successfully.
+- The 21 November joystick reset and district-scenery changes build successfully.
 - `git diff --check` passed before the feature and merge commits.
 - The iPhone 18 Pro Simulator has been booted and opened.
 - The newest combined build has not yet been stepped through manually in the Simulator.

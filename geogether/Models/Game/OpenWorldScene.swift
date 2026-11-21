@@ -53,14 +53,18 @@ final class OpenWorldScene: SKScene {
         addZoneBackground(pos: CGPoint(x: 380, y: -320), color: SKColor(red: 0.08, green: 0.32, blue: 0.38, alpha: 1.0), title: "TIDAL MANGROVES", subtitle: "Coastal ecosystems")
         addZoneBackground(pos: CGPoint(x: -380, y: -320), color: SKColor(red: 0.18, green: 0.40, blue: 0.30, alpha: 1.0), title: "ECO-DISTRICT", subtitle: "Housing and sustainability")
 
+        addBiomeScenery()
+
         let hRoad = SKShapeNode(rectOf: CGSize(width: 1400, height: 54))
         hRoad.fillColor = SKColor(white: 0.20, alpha: 0.9)
         hRoad.strokeColor = .clear
+        hRoad.zPosition = 2
         addChild(hRoad)
 
         let vRoad = SKShapeNode(rectOf: CGSize(width: 54, height: 1200))
         vRoad.fillColor = SKColor(white: 0.20, alpha: 0.9)
         vRoad.strokeColor = .clear
+        vRoad.zPosition = 2
         addChild(vRoad)
     }
 
@@ -69,6 +73,7 @@ final class OpenWorldScene: SKScene {
         zone.position = pos
         zone.fillColor = color
         zone.strokeColor = .clear
+        zone.zPosition = -20
         addChild(zone)
 
         let label = SKLabelNode(text: title)
@@ -76,6 +81,7 @@ final class OpenWorldScene: SKScene {
         label.fontSize = 18
         label.fontColor = .white
         label.position = CGPoint(x: pos.x, y: pos.y + 242)
+        label.zPosition = 4
         addChild(label)
 
         let subtitleLabel = SKLabelNode(text: subtitle)
@@ -83,7 +89,297 @@ final class OpenWorldScene: SKScene {
         subtitleLabel.fontSize = 12
         subtitleLabel.fontColor = .systemBlue
         subtitleLabel.position = CGPoint(x: pos.x, y: pos.y + 220)
+        subtitleLabel.zPosition = 4
         addChild(subtitleLabel)
+    }
+
+    private func addBiomeScenery() {
+        addRuralScenery()
+        addCityScenery()
+        addMangroveScenery()
+        addEcoDistrictScenery()
+    }
+
+    private func addRuralScenery() {
+        addHill(at: CGPoint(x: -585, y: 420), size: CGSize(width: 180, height: 90))
+        addHill(at: CGPoint(x: -285, y: 470), size: CGSize(width: 230, height: 110))
+        addHill(at: CGPoint(x: -520, y: 175), size: CGSize(width: 210, height: 85))
+
+        addTree(at: CGPoint(x: -640, y: 250), scale: 1.0)
+        addTree(at: CGPoint(x: -470, y: 510), scale: 0.82)
+        addTree(at: CGPoint(x: -260, y: 190), scale: 0.9)
+        addTree(at: CGPoint(x: -125, y: 420), scale: 0.75)
+
+        addHouse(at: CGPoint(x: -555, y: 335), wallColor: .systemOrange, roofColor: .systemRed)
+        addHouse(at: CGPoint(x: -365, y: 245), wallColor: .systemYellow, roofColor: .brown)
+        addHouse(at: CGPoint(x: -175, y: 515), wallColor: .systemTeal, roofColor: .systemIndigo)
+    }
+
+    private func addCityScenery() {
+        addCityBuilding(at: CGPoint(x: 135, y: 420), size: CGSize(width: 72, height: 150), color: .systemIndigo)
+        addCityBuilding(at: CGPoint(x: 265, y: 235), size: CGSize(width: 92, height: 185), color: .darkGray)
+        addCityBuilding(at: CGPoint(x: 410, y: 475), size: CGSize(width: 82, height: 175), color: .systemBlue)
+        addCityBuilding(at: CGPoint(x: 555, y: 255), size: CGSize(width: 104, height: 205), color: .gray)
+        addCityBuilding(at: CGPoint(x: 655, y: 490), size: CGSize(width: 68, height: 135), color: .systemPurple)
+
+        addTree(at: CGPoint(x: 380, y: 190), scale: 0.65)
+        addTree(at: CGPoint(x: 670, y: 175), scale: 0.6)
+    }
+
+    private func addMangroveScenery() {
+        addWaterPool(at: CGPoint(x: 225, y: -260), size: CGSize(width: 250, height: 115))
+        addWaterPool(at: CGPoint(x: 520, y: -445), size: CGSize(width: 300, height: 120))
+
+        addMangroveTree(at: CGPoint(x: 135, y: -180), scale: 0.85)
+        addMangroveTree(at: CGPoint(x: 285, y: -430), scale: 1.0)
+        addMangroveTree(at: CGPoint(x: 445, y: -205), scale: 0.9)
+        addMangroveTree(at: CGPoint(x: 615, y: -405), scale: 1.08)
+        addMangroveTree(at: CGPoint(x: 655, y: -205), scale: 0.72)
+
+        addReeds(at: CGPoint(x: 170, y: -500))
+        addReeds(at: CGPoint(x: 390, y: -515))
+        addReeds(at: CGPoint(x: 585, y: -160))
+    }
+
+    private func addEcoDistrictScenery() {
+        addEcoHouse(at: CGPoint(x: -610, y: -220), wallColor: .systemMint)
+        addEcoHouse(at: CGPoint(x: -395, y: -455), wallColor: .systemBlue)
+        addEcoHouse(at: CGPoint(x: -175, y: -255), wallColor: .systemGreen)
+        addWindTurbine(at: CGPoint(x: -570, y: -500))
+        addWindTurbine(at: CGPoint(x: -150, y: -500))
+
+        addTree(at: CGPoint(x: -500, y: -320), scale: 0.75)
+        addTree(at: CGPoint(x: -270, y: -165), scale: 0.65)
+        addCommunityGarden(at: CGPoint(x: -285, y: -520))
+    }
+
+    private func addHill(at position: CGPoint, size: CGSize) {
+        let hill = SKShapeNode(ellipseOf: size)
+        hill.position = position
+        hill.fillColor = SKColor(red: 0.30, green: 0.58, blue: 0.25, alpha: 1)
+        hill.strokeColor = .clear
+        hill.zPosition = -8
+        addChild(hill)
+    }
+
+    private func addTree(at position: CGPoint, scale: CGFloat) {
+        let tree = SKNode()
+        tree.position = position
+        tree.setScale(scale)
+        tree.zPosition = -4
+
+        let trunk = SKShapeNode(rectOf: CGSize(width: 14, height: 34), cornerRadius: 3)
+        trunk.fillColor = .brown
+        trunk.strokeColor = .clear
+        trunk.position.y = -12
+        tree.addChild(trunk)
+
+        let crown = SKShapeNode(circleOfRadius: 28)
+        crown.fillColor = .systemGreen
+        crown.strokeColor = SKColor.white.withAlphaComponent(0.2)
+        crown.position.y = 18
+        tree.addChild(crown)
+        crown.run(gentleSway())
+
+        addChild(tree)
+    }
+
+    private func addHouse(at position: CGPoint, wallColor: SKColor, roofColor: SKColor) {
+        let house = SKNode()
+        house.position = position
+        house.zPosition = -3
+
+        let walls = SKShapeNode(rectOf: CGSize(width: 70, height: 48), cornerRadius: 4)
+        walls.fillColor = wallColor
+        walls.strokeColor = .clear
+        house.addChild(walls)
+
+        let roofPath = CGMutablePath()
+        roofPath.move(to: CGPoint(x: -43, y: 23))
+        roofPath.addLine(to: CGPoint(x: 0, y: 55))
+        roofPath.addLine(to: CGPoint(x: 43, y: 23))
+        roofPath.closeSubpath()
+        let roof = SKShapeNode(path: roofPath)
+        roof.fillColor = roofColor
+        roof.strokeColor = .clear
+        house.addChild(roof)
+
+        let door = SKShapeNode(rectOf: CGSize(width: 16, height: 26), cornerRadius: 2)
+        door.fillColor = .brown
+        door.strokeColor = .clear
+        door.position = CGPoint(x: 0, y: -11)
+        house.addChild(door)
+
+        addChild(house)
+    }
+
+    private func addCityBuilding(at position: CGPoint, size: CGSize, color: SKColor) {
+        let building = SKNode()
+        building.position = position
+        building.zPosition = -3
+
+        let body = SKShapeNode(rectOf: size, cornerRadius: 5)
+        body.fillColor = color
+        body.strokeColor = SKColor.white.withAlphaComponent(0.18)
+        building.addChild(body)
+
+        let columns = max(2, Int(size.width / 28))
+        let rows = max(3, Int(size.height / 34))
+        for row in 0..<rows {
+            for column in 0..<columns {
+                let window = SKShapeNode(rectOf: CGSize(width: 10, height: 12), cornerRadius: 2)
+                window.fillColor = (row + column).isMultiple(of: 3) ? .systemYellow : .systemCyan
+                window.strokeColor = .clear
+                window.alpha = 0.75
+                window.position = CGPoint(
+                    x: CGFloat(column) * 22 - CGFloat(columns - 1) * 11,
+                    y: CGFloat(row) * 27 - CGFloat(rows - 1) * 13.5
+                )
+                building.addChild(window)
+            }
+        }
+
+        addChild(building)
+    }
+
+    private func addWaterPool(at position: CGPoint, size: CGSize) {
+        let water = SKShapeNode(ellipseOf: size)
+        water.position = position
+        water.fillColor = SKColor(red: 0.10, green: 0.58, blue: 0.68, alpha: 0.75)
+        water.strokeColor = SKColor.white.withAlphaComponent(0.35)
+        water.lineWidth = 3
+        water.zPosition = -9
+        water.run(SKAction.repeatForever(SKAction.sequence([
+            SKAction.fadeAlpha(to: 0.65, duration: 1.6),
+            SKAction.fadeAlpha(to: 0.9, duration: 1.6)
+        ])))
+        addChild(water)
+    }
+
+    private func addMangroveTree(at position: CGPoint, scale: CGFloat) {
+        let tree = SKNode()
+        tree.position = position
+        tree.setScale(scale)
+        tree.zPosition = -3
+
+        let trunk = SKShapeNode(rectOf: CGSize(width: 15, height: 58), cornerRadius: 4)
+        trunk.fillColor = SKColor(red: 0.45, green: 0.26, blue: 0.12, alpha: 1)
+        trunk.strokeColor = .clear
+        trunk.position.y = 10
+        tree.addChild(trunk)
+
+        let rootsPath = CGMutablePath()
+        for offset in stride(from: -28, through: 28, by: 14) {
+            rootsPath.move(to: CGPoint(x: 0, y: -16))
+            rootsPath.addQuadCurve(
+                to: CGPoint(x: offset, y: -45),
+                control: CGPoint(x: CGFloat(offset) * 0.35, y: -26)
+            )
+        }
+        let roots = SKShapeNode(path: rootsPath)
+        roots.strokeColor = SKColor(red: 0.58, green: 0.34, blue: 0.15, alpha: 1)
+        roots.lineWidth = 5
+        roots.lineCap = .round
+        tree.addChild(roots)
+
+        let canopy = SKNode()
+        canopy.position.y = 46
+        for offset in [CGPoint(x: -22, y: 0), CGPoint(x: 0, y: 12), CGPoint(x: 24, y: 0)] {
+            let leaves = SKShapeNode(circleOfRadius: 24)
+            leaves.fillColor = .systemGreen
+            leaves.strokeColor = .clear
+            leaves.position = offset
+            canopy.addChild(leaves)
+        }
+        canopy.run(gentleSway())
+        tree.addChild(canopy)
+
+        addChild(tree)
+    }
+
+    private func addReeds(at position: CGPoint) {
+        let reeds = SKNode()
+        reeds.position = position
+        reeds.zPosition = -2
+
+        for index in 0..<6 {
+            let reed = SKShapeNode(rectOf: CGSize(width: 3, height: CGFloat(18 + index * 3)), cornerRadius: 1)
+            reed.fillColor = .systemGreen
+            reed.strokeColor = .clear
+            reed.position.x = CGFloat(index * 7)
+            reeds.addChild(reed)
+        }
+        reeds.run(gentleSway())
+        addChild(reeds)
+    }
+
+    private func addEcoHouse(at position: CGPoint, wallColor: SKColor) {
+        addHouse(at: position, wallColor: wallColor, roofColor: .darkGray)
+
+        let panel = SKShapeNode(rectOf: CGSize(width: 48, height: 18), cornerRadius: 2)
+        panel.position = CGPoint(x: position.x, y: position.y + 46)
+        panel.fillColor = .systemBlue
+        panel.strokeColor = .systemCyan
+        panel.lineWidth = 2
+        panel.zPosition = -1
+        addChild(panel)
+    }
+
+    private func addWindTurbine(at position: CGPoint) {
+        let turbine = SKNode()
+        turbine.position = position
+        turbine.zPosition = -2
+
+        let mast = SKShapeNode(rectOf: CGSize(width: 7, height: 90), cornerRadius: 2)
+        mast.fillColor = .white
+        mast.strokeColor = .clear
+        turbine.addChild(mast)
+
+        let blades = SKNode()
+        blades.position.y = 45
+        for angle in stride(from: 0.0, to: 360.0, by: 120.0) {
+            let radians = CGFloat(angle) * .pi / 180
+            let blade = SKShapeNode(rectOf: CGSize(width: 9, height: 48), cornerRadius: 4)
+            blade.fillColor = .white
+            blade.strokeColor = .clear
+            blade.position = CGPoint(x: -sin(radians) * 22, y: cos(radians) * 22)
+            blade.zRotation = -radians
+            blades.addChild(blade)
+        }
+        blades.run(SKAction.repeatForever(SKAction.rotate(byAngle: -.pi * 2, duration: 6)))
+        turbine.addChild(blades)
+
+        addChild(turbine)
+    }
+
+    private func addCommunityGarden(at position: CGPoint) {
+        let garden = SKNode()
+        garden.position = position
+        garden.zPosition = -2
+
+        for row in 0..<3 {
+            let bed = SKShapeNode(rectOf: CGSize(width: 88, height: 14), cornerRadius: 4)
+            bed.fillColor = .brown
+            bed.strokeColor = .clear
+            bed.position.y = CGFloat(row * 20)
+            garden.addChild(bed)
+
+            for column in 0..<5 {
+                let plant = SKShapeNode(circleOfRadius: 5)
+                plant.fillColor = row.isMultiple(of: 2) ? .systemGreen : .systemMint
+                plant.strokeColor = .clear
+                plant.position = CGPoint(x: CGFloat(column * 17 - 34), y: CGFloat(row * 20))
+                garden.addChild(plant)
+            }
+        }
+
+        addChild(garden)
+    }
+
+    private func gentleSway() -> SKAction {
+        let sway = SKAction.rotate(byAngle: 0.035, duration: 1.2)
+        sway.timingMode = .easeInEaseOut
+        return SKAction.repeatForever(SKAction.sequence([sway, sway.reversed()]))
     }
 
     // Low-Poly Voxel Cat Node with solid black eyes
