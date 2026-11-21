@@ -3,6 +3,7 @@ import SwiftUI
 // MARK: 3. Sustainable housing
 
 struct HousingSolutionsView: View {
+    @Environment(\.isEmbeddedSimulation) private var isEmbeddedSimulation
     @State private var progress = 0.0
 
     private var solutionCount: Int {
@@ -57,7 +58,11 @@ struct HousingSolutionsView: View {
             }
             .padding(20)
         }
-        .background(AnimatedOceanBackground())
+        .background {
+            if !isEmbeddedSimulation {
+                AnimatedOceanBackground()
+            }
+        }
         .navigationTitle("Sustainable housing")
         .navigationBarTitleDisplayMode(.inline)
     }

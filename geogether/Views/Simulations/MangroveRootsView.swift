@@ -3,6 +3,8 @@ import SwiftUI
 // MARK: 2. Mangrove roots
 
 struct MangroveRootsView: View {
+    @Environment(\.isEmbeddedSimulation) private var isEmbeddedSimulation
+
     private enum RootType: String, CaseIterable, Identifiable {
         case prop = "Prop roots"
         case pneumatophore = "Breathing roots"
@@ -67,7 +69,11 @@ struct MangroveRootsView: View {
             }
             .padding(20)
         }
-        .background(AnimatedOceanBackground())
+        .background {
+            if !isEmbeddedSimulation {
+                AnimatedOceanBackground()
+            }
+        }
         .navigationTitle("Mangrove roots")
         .navigationBarTitleDisplayMode(.inline)
     }

@@ -1,5 +1,16 @@
 import SwiftUI
 
+private struct EmbeddedSimulationKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
+extension EnvironmentValues {
+    var isEmbeddedSimulation: Bool {
+        get { self[EmbeddedSimulationKey.self] }
+        set { self[EmbeddedSimulationKey.self] = newValue }
+    }
+}
+
 enum SimulationDestination: String, CaseIterable, Identifiable, Hashable {
     case geoWorld
     case urbanRural

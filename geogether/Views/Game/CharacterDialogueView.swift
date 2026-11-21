@@ -222,13 +222,13 @@ private struct StudyStageView: View {
     let quest: GeoQuest
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Label("Study content", systemImage: "book.pages.fill")
-                .font(.title3.bold())
-                .foregroundStyle(.blue)
+        VStack(alignment: .leading, spacing: 16) {
+            Label("Field notes", systemImage: "book.pages.fill")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.white.opacity(0.72))
 
             Text(quest.topic)
-                .font(.headline)
+                .font(.title3.weight(.semibold))
                 .foregroundStyle(.white)
 
             ForEach(quest.fieldNotes, id: \.self) { note in
@@ -245,21 +245,18 @@ private struct StudyStageView: View {
 
             if let destination = quest.relatedSimulation {
                 Divider()
-                    .overlay(.white.opacity(0.25))
-
-                Label(destination.title, systemImage: destination.symbol)
-                    .font(.title3.bold())
-                    .foregroundStyle(.blue)
-
-                Text(destination.subtitle)
-                    .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.8))
+                    .overlay(.white.opacity(0.14))
+                    .padding(.vertical, 4)
 
                 InlineGameSimulationView(destination: destination)
             }
         }
         .padding()
-        .background(.black.opacity(0.45), in: RoundedRectangle(cornerRadius: 20))
+        .background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(.white.opacity(0.09), lineWidth: 1)
+        }
     }
 }
 
@@ -267,13 +264,30 @@ private struct InlineGameSimulationView: View {
     let destination: SimulationDestination
 
     var body: some View {
-        destination.view
-            .frame(height: preferredHeight)
-            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(.white.opacity(0.18), lineWidth: 1)
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 10) {
+                Image(systemName: destination.symbol)
+                    .font(.headline)
+                    .foregroundStyle(destination.tint)
+                    .frame(width: 34, height: 34)
+                    .background(destination.tint.opacity(0.14), in: Circle())
+
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(destination.title)
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                    Text("Use the controls below.")
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.62))
+                }
             }
+
+            destination.view
+                .environment(\.isEmbeddedSimulation, true)
+                .environment(\.colorScheme, .dark)
+                .frame(height: preferredHeight)
+                .clipped()
+        }
     }
 
     private var preferredHeight: CGFloat {

@@ -2,6 +2,7 @@ import SwiftUI
 
 /// Comparison adapted from the urban and rural prototype.
 struct HousingCompareView: View {
+    @Environment(\.isEmbeddedSimulation) private var isEmbeddedSimulation
     @State private var split = 0.5
 
     var body: some View {
@@ -76,7 +77,11 @@ struct HousingCompareView: View {
             }
             .padding(20)
         }
-        .background(AnimatedOceanBackground())
+        .background {
+            if !isEmbeddedSimulation {
+                AnimatedOceanBackground()
+            }
+        }
         .navigationTitle("Urban and rural housing")
         .navigationBarTitleDisplayMode(.inline)
     }

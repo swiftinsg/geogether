@@ -33,6 +33,8 @@ The remote `main` branch replaced most of the existing app with a standalone Geo
 - Added a native SwiftUI Liquid Glass simulation bubble inside the game.
 - Added a simulation picker that opens the five main-app simulations without leaving GeogWorld.
 - Embedded each related simulation directly below the character's study notes.
+- Matched embedded simulation backgrounds to the character popup and removed the extra card, gradient and animation layers.
+- Audited every character lesson and kept embedded simulations only for settlement hierarchy, rural and urban comparison, mangrove roots, and sustainable housing.
 - Prevented a character encounter from reopening until the player moves away from that character.
 - Reset joystick and keyboard movement as soon as a character or pollution encounter opens.
 - Added animated scenery to every map district:
@@ -88,6 +90,7 @@ The remote `main` branch replaced most of the existing app with a standalone Geo
 - The combined project builds successfully for the iOS Simulator.
 - The 21 November GeoPaws encounter and inline-simulation changes build successfully.
 - The 21 November joystick reset and district-scenery changes build successfully.
+- The 21 November embedded-simulation Unslop pass builds successfully.
 - `git diff --check` passed before the feature and merge commits.
 - The iPhone 18 Pro Simulator has been booted and opened.
 - The newest combined build has not yet been stepped through manually in the Simulator.

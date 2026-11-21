@@ -3,6 +3,8 @@ import SwiftUI
 // MARK: 1. Settlement hierarchy
 
 struct SettlementHierarchyView: View {
+    @Environment(\.isEmbeddedSimulation) private var isEmbeddedSimulation
+
     private struct Level {
         let name: String
         let population: String
@@ -69,7 +71,11 @@ struct SettlementHierarchyView: View {
             }
             .padding(20)
         }
-        .background(AnimatedOceanBackground())
+        .background {
+            if !isEmbeddedSimulation {
+                AnimatedOceanBackground()
+            }
+        }
         .navigationTitle("Settlement hierarchy")
         .navigationBarTitleDisplayMode(.inline)
     }

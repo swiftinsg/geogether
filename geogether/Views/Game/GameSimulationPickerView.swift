@@ -72,13 +72,13 @@ struct GameSimulationSheet: View {
 extension GeoQuest {
     var relatedSimulation: SimulationDestination? {
         switch id {
-        case "patterns", "hierarchy", "migration":
+        case "hierarchy":
             return .settlements
-        case "services", "rural_urban", "microclimate":
+        case "rural_urban":
             return .urbanRural
         case "mangroves":
             return .mangroveRoots
-        case "housing", "food_miles":
+        case "housing":
             return .housing
         default:
             return nil
