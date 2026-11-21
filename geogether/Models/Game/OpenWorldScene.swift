@@ -25,6 +25,10 @@ final class OpenWorldScene: SKScene {
     private let moveSpeed: CGFloat = 240.0
     private var lastStepTime: TimeInterval = 0
     private var cooldownTimer: TimeInterval = 0
+    private var blockedEncounterNodeName: String?
+
+    private let encounterDistance: CGFloat = 55
+    private let encounterResetDistance: CGFloat = 85
 
     private let cam = SKCameraNode()
 
@@ -317,15 +321,17 @@ final class OpenWorldScene: SKScene {
         updateCurrentBiomeLabel()
         worldDelegate?.didUpdatePlayerPosition(catPlayer.position)
 
-        guard currentTime > cooldownTimer else { return }
         guard let curriculum else { return }
+        guard canStartAnotherEncounter() else { return }
+        guard currentTime > cooldownTimer else { return }
 
         for quest in curriculum.quests {
             let nodeName = "world-entity-quest-\(quest.id)"
             guard let questNode = childNode(withName: nodeName) else { continue }
 
-            if hypot(catPlayer.position.x - questNode.position.x, catPlayer.position.y - questNode.position.y) < 55 {
+            if distanceFromPlayer(to: questNode) < encounterDistance {
                 cooldownTimer = currentTime + 2.5
+                blockedEncounterNodeName = nodeName
                 movementVector = .zero
                 worldDelegate?.didApproachQuest(quest)
                 return
@@ -336,13 +342,33 @@ final class OpenWorldScene: SKScene {
             let nodeName = "world-entity-enemy-\(enemy.id)"
             guard let enemyNode = childNode(withName: nodeName) else { continue }
 
-            if hypot(catPlayer.position.x - enemyNode.position.x, catPlayer.position.y - enemyNode.position.y) < 55 {
+            if distanceFromPlayer(to: enemyNode) < encounterDistance {
                 cooldownTimer = currentTime + 2.5
+                blockedEncounterNodeName = nodeName
                 movementVector = .zero
                 worldDelegate?.didApproachEnemy(enemy)
                 return
             }
         }
+    }
+
+    private func canStartAnotherEncounter() -> Bool {
+        guard let blockedEncounterNodeName else { return true }
+        guard let encounterNode = childNode(withName: blockedEncounterNodeName) else {
+            self.blockedEncounterNodeName = nil
+            return true
+        }
+
+        guard distanceFromPlayer(to: encounterNode) >= encounterResetDistance else {
+            return false
+        }
+
+        self.blockedEncounterNodeName = nil
+        return true
+    }
+
+    private func distanceFromPlayer(to node: SKNode) -> CGFloat {
+        hypot(catPlayer.position.x - node.position.x, catPlayer.position.y - node.position.y)
     }
 
     private func updateCurrentBiomeLabel() {

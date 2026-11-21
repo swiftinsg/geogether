@@ -21,7 +21,7 @@ struct GameHUDView: View {
 
                     Text(zoneName)
                         .font(.caption.bold())
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(.black)
                         .lineLimit(2)
                 }
                 .padding(.horizontal, 12)

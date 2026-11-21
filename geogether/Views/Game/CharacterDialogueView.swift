@@ -26,7 +26,6 @@ struct CharacterDialogueView: View {
     @State private var selectedOption: Int?
     @State private var isCorrect = false
     @State private var didAwardLevel = false
-    @State private var selectedSimulation: SimulationDestination?
 
     var body: some View {
         ZStack {
@@ -45,7 +44,7 @@ struct CharacterDialogueView: View {
                     Group {
                         switch stage {
                         case .study:
-                            StudyStageView(quest: quest, openSimulation: openRelatedSimulation)
+                            StudyStageView(quest: quest)
                         case .background:
                             CharacterBackgroundView(quest: quest)
                         case .quiz:
@@ -60,9 +59,6 @@ struct CharacterDialogueView: View {
                     .padding(.horizontal)
                     .padding(.bottom, 8)
             }
-        }
-        .sheet(item: $selectedSimulation) { destination in
-            GameSimulationSheet(destination: destination)
         }
     }
 
@@ -207,10 +203,6 @@ struct CharacterDialogueView: View {
         SoundManager.shared.play(.quizCorrect)
     }
 
-    private func openRelatedSimulation() {
-        selectedSimulation = quest.relatedSimulation
-    }
-
     private func answerSymbol(for index: Int) -> String {
         guard let selectedOption else { return "circle" }
         if index == quest.question.correctIndex, isCorrect { return "checkmark.circle.fill" }
@@ -228,7 +220,6 @@ struct CharacterDialogueView: View {
 
 private struct StudyStageView: View {
     let quest: GeoQuest
-    let openSimulation: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -252,17 +243,47 @@ private struct StudyStageView: View {
                 }
             }
 
-            if quest.relatedSimulation != nil {
-                Button(action: openSimulation) {
-                    Label("Try the related simulation", systemImage: "play.rectangle.fill")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.blue)
+            if let destination = quest.relatedSimulation {
+                Divider()
+                    .overlay(.white.opacity(0.25))
+
+                Label(destination.title, systemImage: destination.symbol)
+                    .font(.title3.bold())
+                    .foregroundStyle(.blue)
+
+                Text(destination.subtitle)
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.8))
+
+                InlineGameSimulationView(destination: destination)
             }
         }
         .padding()
         .background(.black.opacity(0.45), in: RoundedRectangle(cornerRadius: 20))
+    }
+}
+
+private struct InlineGameSimulationView: View {
+    let destination: SimulationDestination
+
+    var body: some View {
+        destination.view
+            .frame(height: preferredHeight)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(.white.opacity(0.18), lineWidth: 1)
+            }
+    }
+
+    private var preferredHeight: CGFloat {
+        switch destination {
+        case .settlements: return 620
+        case .urbanRural: return 720
+        case .mangroveRoots: return 610
+        case .housing: return 680
+        case .geoWorld, .waterCycle: return 620
+        }
     }
 }
 
