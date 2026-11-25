@@ -1,84 +1,66 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var isAdventureStarted = false
+    private let darkBlue = Color(red: 0.03, green: 0.18, blue: 0.35)
 
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                LinearGradient(
-                    colors: [
-                        Color(red: 0.80, green: 0.95, blue: 0.99),
-                        Color(red: 0.38, green: 0.78, blue: 0.91),
-                        Color(red: 0.08, green: 0.43, blue: 0.72)
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .ignoresSafeArea()
+        NavigationStack {
+            GeometryReader { geometry in
+                ZStack {
+                    MovingBlueBackground()
 
-                WaterScene()
-                    .ignoresSafeArea()
+                    WaterScene()
+                        .ignoresSafeArea()
 
-                VStack(spacing: 24) {
-                    Spacer()
+                    VStack(spacing: 40) {
+                        WelcomeHeading()
+                            .foregroundStyle(.white)
+                            .shadow(color: darkBlue.opacity(0.45), radius: 8, y: 3)
+                            .padding(20)
+                            .padding(.top, min(geometry.size.height * 0.14, 104))
 
-                    VStack(spacing: 12) {
-                        Text("YOUR NEXT JOURNEY STARTS HERE")
-                            .font(.system(size: 12, weight: .bold, design: .rounded))
-                            .tracking(2.2)
-                            .foregroundStyle(.white.opacity(0.85))
+                        Spacer(minLength: 40)
 
-                        HStack(spacing: 0) {
-                            Text("Welcome to")
-                                .padding(.trailing, 9)
-                            Text("Geogw")
-                            Image(systemName: "globe.americas.fill")
-                                .symbolRenderingMode(.palette)
-                                .foregroundStyle(Color(red: 0.10, green: 0.62, blue: 0.76), .white)
-                                .font(.system(size: 34, weight: .bold))
-                                .padding(.horizontal, 1)
-                                .accessibilityLabel("o")
-                            Text("rld")
+                        NavigationLink {
+                            TopicSelectionView()
+                        } label: {
+                            HStack(spacing: 12) {
+                                Text("Start Adventure")
+                                Image(systemName: "arrow.right")
+                            }
+                            .font(.system(.title2, design: .default, weight: .bold))
+                            .foregroundStyle(darkBlue)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 20)
+                            .background(.white, in: Capsule())
+                            .shadow(color: darkBlue.opacity(0.22), radius: 14, y: 7)
                         }
-                        .font(.system(size: min(geometry.size.width * 0.085, 36), weight: .heavy, design: .rounded))
-                        .foregroundStyle(.white)
-                        .shadow(color: .black.opacity(0.15), radius: 12, y: 4)
-                        .minimumScaleFactor(0.7)
-                        .lineLimit(1)
-                        .accessibilityElement(children: .combine)
-
-                        Text("Discover amazing places, one adventure at a time.")
-                            .font(.system(size: 16, weight: .medium, design: .rounded))
-                            .foregroundStyle(.white.opacity(0.9))
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 28)
+                        .buttonStyle(.plain)
+                        .padding(.bottom, 44)
                     }
-                    .padding(.horizontal, 18)
-
-                    Button {
-                        withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
-                            isAdventureStarted.toggle()
-                        }
-                    } label: {
-                        HStack(spacing: 10) {
-                            Text(isAdventureStarted ? "Let’s explore!" : "Start an adventure")
-                            Image(systemName: isAdventureStarted ? "location.north.fill" : "arrow.right")
-                        }
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(red: 0.04, green: 0.34, blue: 0.58))
-                        .padding(.horizontal, 28)
-                        .padding(.vertical, 17)
-                        .background(.white, in: Capsule())
-                        .shadow(color: .black.opacity(0.18), radius: 14, y: 7)
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.bottom, max(geometry.safeAreaInsets.bottom, 28) + 30)
+                    .padding(.horizontal, 24)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .preferredColorScheme(.light)
+    }
+}
+
+private struct WelcomeHeading: View {
+    @ScaledMetric(relativeTo: .largeTitle) private var titleSize = 60
+
+    var body: some View {
+        VStack(spacing: -5) {
+            Text("Welcome to")
+                .font(.system(.largeTitle, weight: .bold))
+
+            Text(verbatim: "Geogworld")
+                .kerning(-1)
+                .font(.system(size: titleSize, weight: .bold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
+        }
     }
 }
 
