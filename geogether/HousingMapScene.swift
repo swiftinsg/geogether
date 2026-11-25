@@ -13,35 +13,60 @@ struct HousingMapScene: View {
                     HousingMapRoads(time: time, isMoving: !reduceMotion)
 
                     ForEach(HousingLocation.allCases) { location in
-                        let position = location.scenePosition(at: time, isMoving: !reduceMotion)
-                        let phase = time * 1.2 + location.motionPhase
-                        let glow = reduceMotion ? 0.85 : 0.75 + sin(phase) * 0.25
-
-                        NavigationLink {
-                            HousingLocationDetailView(location: location)
-                        } label: {
-                            FloatingHousingPlot(location: location, glow: glow)
-                                .frame(
-                                    width: location.sceneSize.width * scale,
-                                    height: location.sceneSize.height * scale
-                                )
-                                .perspectiveRotationEffect(
-                                    .degrees(reduceMotion ? 0 : sin(phase) * 4),
-                                    axis: (x: 1, y: 0.5, z: 0),
-                                    perspective: 0.35
-                                )
-                                .contentShape(RoundedRectangle(cornerRadius: 20))
-                        }
-                        .buttonStyle(HousingPlotButtonStyle())
-                        .position(x: position.x * scale, y: position.y * scale)
-                        .accessibilityLabel(Text(location.title))
-                        .accessibilityHint("Opens this place")
+                        HousingPlotLink(location: location, time: time, scale: scale, isMoving: !reduceMotion)
                     }
                 }
             }
         }
-        .aspectRatio(1000.0 / 900, contentMode: .fit)
+        .aspectRatio(1000.0 / 1180, contentMode: .fit)
         .environment(\.layoutDirection, .leftToRight)
+    }
+}
+
+private struct HousingPlotLink: View {
+    let location: HousingLocation
+    let time: TimeInterval
+    let scale: CGFloat
+    let isMoving: Bool
+    @ScaledMetric(relativeTo: .caption) private var labelHeight: CGFloat = 40
+
+    var body: some View {
+        let position = location.scenePosition(at: time, isMoving: isMoving)
+        let phase = time * 1.2 + location.motionPhase
+        let glow = isMoving ? 0.75 + sin(phase) * 0.25 : 0.85
+        let angle = Angle.degrees(isMoving ? sin(phase) * 4 : 0)
+
+        NavigationLink {
+            HousingLocationDetailView(location: location)
+        } label: {
+            VStack(spacing: 12) {
+                FloatingHousingPlot(location: location, glow: glow)
+                    .frame(width: location.sceneSize.width * scale, height: location.sceneSize.height * scale)
+                    .rotation3DEffect(angle, axis: (x: 1, y: 0.5, z: 0), perspective: 0.35)
+
+                Text(location.title)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Color(red: 0.17, green: 0.30, blue: 0.23))
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .padding(.horizontal, 10)
+                    .frame(height: labelHeight)
+                    .frame(maxWidth: .infinity)
+                    .background(.white.opacity(0.96), in: RoundedRectangle(cornerRadius: 12))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12)
+                            .strokeBorder(location.color.opacity(0.12), lineWidth: 1)
+                    }
+                    .shadow(color: .black.opacity(0.04), radius: 3, y: 2)
+            }
+            .frame(width: max(110, location.sceneSize.width * scale))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(HousingPlotButtonStyle())
+        // Keep the artwork centred on its road connection, with the name below it.
+        .position(x: position.x * scale, y: position.y * scale + (labelHeight + 12) / 2)
+        .accessibilityLabel(Text(location.title))
+        .accessibilityHint("Opens this place")
     }
 }
 
@@ -51,17 +76,17 @@ private struct FloatingHousingPlot: View {
 
     var body: some View {
         GeometryReader { geometry in
-            let cornerRadius = min(geometry.size.width, geometry.size.height) * 0.25
+            let cornerRadius = min(geometry.size.width, geometry.size.height) * 0.22
             let shape = RoundedRectangle(cornerRadius: cornerRadius)
-            let inset: CGFloat = 5
+            let inset: CGFloat = 3
             let crop = location.mapBounds
             let imageWidth = (geometry.size.width - inset * 2) / crop.width
 
             ZStack {
                 shape
                     .fill(Color(red: 0.37, green: 0.53, blue: 0.38))
-                    .offset(y: 7)
-                    .shadow(color: Color(red: 0.15, green: 0.30, blue: 0.19).opacity(0.22), radius: 8, y: 12)
+                    .offset(y: 4)
+                    .shadow(color: Color(red: 0.15, green: 0.30, blue: 0.19).opacity(0.16), radius: 6, y: 9)
 
                 shape
                     .fill(Color(red: 0.76, green: 0.87, blue: 0.68))
@@ -78,12 +103,19 @@ private struct FloatingHousingPlot: View {
                         alignment: .topLeading
                     )
                     .clipped()
-                    .clipShape(RoundedRectangle(cornerRadius: max(0, cornerRadius - inset)))
+                    .clipShape(
+                        UnevenRoundedRectangle(
+                            topLeadingRadius: location == .school ? geometry.size.height * 0.6 : max(0, cornerRadius - inset),
+                            bottomLeadingRadius: max(0, cornerRadius - inset),
+                            bottomTrailingRadius: max(0, cornerRadius - inset),
+                            topTrailingRadius: max(0, cornerRadius - inset)
+                        )
+                    )
 
                 shape
-                    .strokeBorder(Color(red: 1, green: 0.87, blue: 0.35).opacity(glow), lineWidth: 2)
-                    .shadow(color: .yellow.opacity(glow * 0.85), radius: 6)
-                    .shadow(color: .yellow.opacity(glow * 0.5), radius: 12)
+                    .strokeBorder(Color(red: 1, green: 0.87, blue: 0.46).opacity(glow), lineWidth: 1.5)
+                    .shadow(color: .yellow.opacity(glow * 0.6), radius: 5)
+                    .shadow(color: .yellow.opacity(glow * 0.3), radius: 9)
             }
         }
     }
@@ -112,7 +144,7 @@ private struct HousingMapRoads: View {
 
     var body: some View {
         Canvas { context, size in
-            context.scaleBy(x: size.width / 1000, y: size.height / 900)
+            context.scaleBy(x: size.width / 1000, y: size.height / 1180)
 
             for connection in connections {
                 let start = connection.from.scenePosition(at: time, isMoving: isMoving)
@@ -157,12 +189,12 @@ private struct HousingMapConnection {
 extension HousingLocation {
     var sceneSize: CGSize {
         let width: CGFloat = switch self {
-        case .community: 280
-        case .homes: 220
-        case .dining: 280
-        case .school: 310
-        case .playground: 200
-        case .garden: 150
+        case .community: 290
+        case .homes: 260
+        case .dining: 290
+        case .school: 300
+        case .playground: 225
+        case .garden: 190
         }
         return CGSize(width: width, height: width * mapBounds.height / mapBounds.width)
     }
@@ -180,12 +212,12 @@ extension HousingLocation {
 
     func scenePosition(at time: TimeInterval, isMoving: Bool) -> CGPoint {
         let center: CGPoint = switch self {
-        case .community: CGPoint(x: 165, y: 300)
-        case .homes: CGPoint(x: 450, y: 430)
-        case .dining: CGPoint(x: 580, y: 140)
-        case .school: CGPoint(x: 820, y: 330)
-        case .playground: CGPoint(x: 410, y: 690)
-        case .garden: CGPoint(x: 780, y: 730)
+        case .community: CGPoint(x: 170, y: 285)
+        case .homes: CGPoint(x: 470, y: 495)
+        case .dining: CGPoint(x: 520, y: 130)
+        case .school: CGPoint(x: 840, y: 355)
+        case .playground: CGPoint(x: 260, y: 870)
+        case .garden: CGPoint(x: 750, y: 870)
         }
         guard isMoving else { return center }
         let phase = time * 1.2 + motionPhase

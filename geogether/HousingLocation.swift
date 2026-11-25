@@ -8,8 +8,8 @@ enum HousingLocation: String, CaseIterable, Identifiable {
     var title: LocalizedStringResource {
         switch self {
         case .community: "Community centre"
-        case .homes: "Homes"
-        case .dining: "Dining area"
+        case .homes: "Public housing"
+        case .dining: "Hawker center"
         case .school: "School"
         case .playground: "Playground"
         case .garden: "Community garden"
@@ -27,15 +27,15 @@ enum HousingLocation: String, CaseIterable, Identifiable {
         }
     }
 
-    // Positions use the city artwork's 720 × 1100 coordinate space.
-    var mapCenter: CGPoint {
+    // Normalized bounds in the original square map image.
+    var mapBounds: CGRect {
         switch self {
-        case .community: CGPoint(x: 119, y: 175)
-        case .homes: CGPoint(x: 360, y: 175)
-        case .dining: CGPoint(x: 360, y: 520)
-        case .school: CGPoint(x: 600, y: 520)
-        case .playground: CGPoint(x: 119, y: 885)
-        case .garden: CGPoint(x: 600, y: 885)
+        case .community: CGRect(x: 0.04, y: 0.31, width: 0.24, height: 0.16)
+        case .homes: CGRect(x: 0.33, y: 0.38, width: 0.18, height: 0.15)
+        case .dining: CGRect(x: 0.42, y: 0.24, width: 0.25, height: 0.16)
+        case .school: CGRect(x: 0.57, y: 0.37, width: 0.35, height: 0.19)
+        case .playground: CGRect(x: 0.42, y: 0.53, width: 0.15, height: 0.12)
+        case .garden: CGRect(x: 0.57, y: 0.67, width: 0.11, height: 0.12)
         }
     }
 
