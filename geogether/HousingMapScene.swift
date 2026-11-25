@@ -95,38 +95,94 @@ private struct FloatingHousingPlot: View {
                 shape
                     .fill(Color(red: 0.76, green: 0.87, blue: 0.68))
 
-                // Display an independent window onto the original artwork.
-                // The drawing stays unchanged while its six pieces move separately.
-                if location == .community {
-                    CommunityCentreArtwork()
-                        .frame(width: geometry.size.width - inset * 2, height: geometry.size.height - inset * 2)
-                        .padding(inset)
-                } else {
-                    Image("SustainableHousingMap")
-                        .resizable()
-                        .frame(width: imageWidth, height: imageWidth)
-                        .offset(x: -crop.minX * imageWidth, y: -crop.minY * imageWidth)
-                        .frame(
-                            width: geometry.size.width - inset * 2,
-                            height: geometry.size.height - inset * 2,
-                            alignment: .topLeading
-                        )
-                        .clipped()
-                        .clipShape(
-                            UnevenRoundedRectangle(
-                                topLeadingRadius: location == .school ? geometry.size.height * 0.6 : max(0, cornerRadius - inset),
-                                bottomLeadingRadius: max(0, cornerRadius - inset),
-                                bottomTrailingRadius: max(0, cornerRadius - inset),
-                                topTrailingRadius: max(0, cornerRadius - inset)
+                Group {
+                    if location == .community {
+                        CommunityCentreArtwork()
+                    } else if location == .school {
+                        NeighbourhoodSchoolArtwork()
+                    } else if location == .garden {
+                        NeighbourhoodParkArtwork()
+                    } else {
+                        Image("SustainableHousingMap")
+                            .resizable()
+                            .frame(width: imageWidth, height: imageWidth)
+                            .offset(x: -crop.minX * imageWidth, y: -crop.minY * imageWidth)
+                            .frame(
+                                width: geometry.size.width - inset * 2,
+                                height: geometry.size.height - inset * 2,
+                                alignment: .topLeading
                             )
-                        )
-    
+                            .clipped()
+                    }
                 }
+                .frame(width: geometry.size.width - inset * 2, height: geometry.size.height - inset * 2)
+                .padding(inset)
+                .clipShape(RoundedRectangle(cornerRadius: max(0, cornerRadius - inset)))
 
                 shape
                     .strokeBorder(Color(red: 1, green: 0.87, blue: 0.46).opacity(glow), lineWidth: 1.5)
                     .shadow(color: .yellow.opacity(glow * 0.6), radius: 5)
                     .shadow(color: .yellow.opacity(glow * 0.3), radius: 9)
+            }
+        }
+    }
+}
+
+private struct NeighbourhoodSchoolArtwork: View {
+    var body: some View {
+        Canvas { context, size in
+            context.scaleBy(x: size.width / 300, y: size.height / 190)
+            context.fill(Path(CGRect(x: 0, y: 0, width: 300, height: 190)), with: .color(Color(red: 0.68, green: 0.85, blue: 0.84)))
+            context.fill(Path(ellipseIn: CGRect(x: 225, y: 15, width: 42, height: 42)), with: .color(Color(red: 0.98, green: 0.84, blue: 0.48)))
+            context.fill(Path(CGRect(x: 0, y: 137, width: 300, height: 53)), with: .color(Color(red: 0.60, green: 0.72, blue: 0.47)))
+            context.fill(Path(CGRect(x: 28, y: 149, width: 245, height: 25)), with: .color(Color(red: 0.85, green: 0.78, blue: 0.60)))
+            context.fill(Path(roundedRect: CGRect(x: 47, y: 70, width: 208, height: 83), cornerRadius: 7), with: .color(Color(red: 0.79, green: 0.38, blue: 0.29)))
+            context.fill(Path(roundedRect: CGRect(x: 55, y: 78, width: 192, height: 70), cornerRadius: 5), with: .color(Color(red: 0.95, green: 0.79, blue: 0.58)))
+            context.fill(Path(roundedRect: CGRect(x: 55, y: 119, width: 192, height: 29), cornerRadius: 3), with: .color(Color(red: 0.83, green: 0.43, blue: 0.31)))
+            var roof = Path()
+            roof.move(to: CGPoint(x: 32, y: 76))
+            roof.addLine(to: CGPoint(x: 150, y: 25))
+            roof.addLine(to: CGPoint(x: 269, y: 76))
+            roof.closeSubpath()
+            context.fill(roof, with: .color(Color(red: 0.69, green: 0.27, blue: 0.25)))
+            context.fill(Path(roundedRect: CGRect(x: 111, y: 47, width: 78, height: 27), cornerRadius: 7), with: .color(Color(red: 0.97, green: 0.83, blue: 0.61)))
+            context.draw(Text("SCHOOL").font(.system(size: 13, weight: .heavy, design: .rounded)).foregroundColor(Color(red: 0.58, green: 0.34, blue: 0.25)), at: CGPoint(x: 150, y: 61))
+            for x in [72.0, 111.0, 190.0, 229.0] {
+                context.fill(Path(roundedRect: CGRect(x: x, y: 87, width: 22, height: 25), cornerRadius: 4), with: .color(Color(red: 0.54, green: 0.75, blue: 0.77)))
+                context.stroke(Path(CGRect(x: x + 11, y: 87, width: 1, height: 25)), with: .color(.white.opacity(0.85)), lineWidth: 2)
+                context.stroke(Path(CGRect(x: x, y: 99, width: 22, height: 1)), with: .color(.white.opacity(0.85)), lineWidth: 2)
+            }
+            context.fill(Path(roundedRect: CGRect(x: 137, y: 112, width: 26, height: 36), cornerRadius: 4), with: .color(Color(red: 0.45, green: 0.62, blue: 0.68)))
+            context.fill(Path(roundedRect: CGRect(x: 21, y: 151, width: 258, height: 7), cornerRadius: 3), with: .color(Color(red: 0.96, green: 0.88, blue: 0.68)))
+            for x in [28.0, 272.0] {
+                context.fill(Path(ellipseIn: CGRect(x: x - 15, y: 107, width: 30, height: 32)), with: .color(Color(red: 0.30, green: 0.55, blue: 0.39)))
+                context.fill(Path(ellipseIn: CGRect(x: x - 10, y: 102, width: 22, height: 25)), with: .color(Color(red: 0.45, green: 0.68, blue: 0.45)))
+            }
+        }
+    }
+}
+
+private struct NeighbourhoodParkArtwork: View {
+    var body: some View {
+        Canvas { context, size in
+            context.scaleBy(x: size.width / 190, y: size.height / 190)
+            context.fill(Path(CGRect(x: 0, y: 0, width: 190, height: 190)), with: .color(Color(red: 0.63, green: 0.79, blue: 0.56)))
+            context.fill(Path(roundedRect: CGRect(x: 15, y: 15, width: 160, height: 160), cornerRadius: 34), with: .color(Color(red: 0.50, green: 0.70, blue: 0.46)))
+            var path = Path()
+            path.move(to: CGPoint(x: 7, y: 103))
+            path.addCurve(to: CGPoint(x: 178, y: 83), control1: CGPoint(x: 57, y: 38), control2: CGPoint(x: 121, y: 159))
+            context.stroke(path, with: .color(Color(red: 0.94, green: 0.86, blue: 0.69)), style: StrokeStyle(lineWidth: 18, lineCap: .round))
+            context.stroke(path, with: .color(Color(red: 0.98, green: 0.93, blue: 0.80)), style: StrokeStyle(lineWidth: 3, lineCap: .round, dash: [5, 7]))
+            context.fill(Path(ellipseIn: CGRect(x: 72, y: 69, width: 47, height: 47)), with: .color(Color(red: 0.87, green: 0.84, blue: 0.68)))
+            context.fill(Path(ellipseIn: CGRect(x: 78, y: 75, width: 35, height: 35)), with: .color(Color(red: 0.41, green: 0.72, blue: 0.78)))
+            for (x, y) in [(38.0, 45.0), (147.0, 47.0), (43.0, 148.0), (150.0, 139.0)] {
+                context.fill(Path(roundedRect: CGRect(x: x - 3, y: y + 10, width: 6, height: 13), cornerRadius: 3), with: .color(Color(red: 0.48, green: 0.38, blue: 0.27)))
+                context.fill(Path(ellipseIn: CGRect(x: x - 16, y: y - 14, width: 32, height: 32)), with: .color(Color(red: 0.28, green: 0.52, blue: 0.37)))
+                context.fill(Path(ellipseIn: CGRect(x: x - 10, y: y - 12, width: 23, height: 22)), with: .color(Color(red: 0.43, green: 0.67, blue: 0.42)))
+            }
+            for x in [60.0, 128.0] {
+                context.fill(Path(ellipseIn: CGRect(x: x, y: 25, width: 7, height: 7)), with: .color(Color(red: 0.96, green: 0.75, blue: 0.55)))
+                context.fill(Path(ellipseIn: CGRect(x: x + 9, y: 29, width: 6, height: 6)), with: .color(Color(red: 0.94, green: 0.90, blue: 0.67)))
             }
         }
     }
@@ -171,11 +227,28 @@ private struct HousingMapRoads: View {
                 context.stroke(path, with: .color(.white.opacity(0.75)), style: StrokeStyle(lineWidth: 2, lineCap: .round, dash: [8, 12]))
 
                 if isMoving {
-                    let progress = (time * 0.12 + connection.from.motionPhase).truncatingRemainder(dividingBy: 1)
-                    let point = connection.point(at: progress, start: start, control1: control1, control2: control2, end: end)
-                    var light = context
-                    light.addFilter(.shadow(color: .yellow.opacity(0.8), radius: 8))
-                    light.fill(Path(ellipseIn: CGRect(x: point.x - 4, y: point.y - 4, width: 8, height: 8)), with: .color(Color(red: 1, green: 0.91, blue: 0.57)))
+                    for carIndex in 0..<2 {
+                        let progress = (time * 0.38 + connection.from.motionPhase * 0.17 + Double(carIndex) * 0.5)
+                            .truncatingRemainder(dividingBy: 1)
+                        let point = connection.point(at: progress, start: start, control1: control1, control2: control2, end: end)
+                        let nextPoint = connection.point(at: min(progress + 0.01, 1), start: start, control1: control1, control2: control2, end: end)
+                        let angle = atan2(nextPoint.y - point.y, nextPoint.x - point.x)
+                        var car = context
+                        car.translateBy(x: point.x, y: point.y)
+                        car.rotate(by: .radians(angle))
+                        let body = Path(roundedRect: CGRect(x: -13, y: -7, width: 26, height: 14), cornerRadius: 5)
+                        car.fill(body.offsetBy(dx: 1, dy: 2), with: .color(.black.opacity(0.18)))
+                        let colors: [Color] = [
+                            Color(red: 0.93, green: 0.66, blue: 0.35),
+                            Color(red: 0.40, green: 0.67, blue: 0.73),
+                            Color(red: 0.84, green: 0.43, blue: 0.36),
+                            Color(red: 0.95, green: 0.91, blue: 0.76)
+                        ]
+                        let colorIndex = (Int(connection.from.motionPhase) + carIndex) % colors.count
+                        car.fill(body, with: .color(colors[colorIndex]))
+                        car.fill(Path(roundedRect: CGRect(x: -6, y: -5, width: 12, height: 10), cornerRadius: 3), with: .color(Color(red: 0.73, green: 0.85, blue: 0.83)))
+                        car.fill(Path(roundedRect: CGRect(x: 9, y: -4, width: 3, height: 3), cornerRadius: 1), with: .color(Color(red: 1, green: 0.92, blue: 0.68)))
+                    }
                 }
             }
         }
