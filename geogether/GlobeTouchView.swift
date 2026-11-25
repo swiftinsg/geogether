@@ -14,9 +14,9 @@ struct GlobeTouchView<Content: View>: View {
             .overlay(alignment: .topLeading) {
                 if let touchLocation {
                     Image(systemName: "globe")
-                        .font(.system(size: 56, weight: .semibold))
+                        .font(.system(size: 40, weight: .semibold))
                         .foregroundStyle(.black)
-                        .position(x: touchLocation.x, y: max(32, touchLocation.y - 110))
+                        .position(x: touchLocation.x, y: max(32, touchLocation.y - 70))
                         .allowsHitTesting(false)
                         .accessibilityHidden(true)
                 }
