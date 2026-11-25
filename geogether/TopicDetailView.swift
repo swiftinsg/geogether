@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct TopicDetailView: View {
+    @Environment(\.dismiss) private var dismiss
+
     let title: LocalizedStringKey
     let symbol: String
 
@@ -27,6 +29,18 @@ struct TopicDetailView: View {
                 .padding(24)
                 .frame(maxWidth: 600)
                 .frame(maxWidth: .infinity)
+            }
+        }
+        .navigationBarBackButtonHidden()
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "globe.badge.chevron.backward")
+                        .font(.body)
+                }
+                .accessibilityLabel("Back")
             }
         }
         .navigationTitle(title)

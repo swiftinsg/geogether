@@ -39,12 +39,8 @@ private struct HousingPlotLink: View {
         let angle = Angle.degrees(isMoving && location != .community ? sin(phase) * 4 : 0)
 
         NavigationLink {
-            if location == .community && isMoving {
-                HousingLocationDetailView(location: location)
-                    .navigationTransition(.zoom(sourceID: location.id, in: transitionNamespace))
-            } else {
-                HousingLocationDetailView(location: location)
-            }
+            HousingLocationDetailView(location: location)
+                .navigationTransition(.zoom(sourceID: location.id, in: transitionNamespace))
         } label: {
             VStack(spacing: 12) {
                 FloatingHousingPlot(location: location, glow: glow)

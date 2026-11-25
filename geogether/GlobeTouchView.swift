@@ -16,7 +16,7 @@ struct GlobeTouchView<Content: View>: View {
                     Image(systemName: "globe")
                         .font(.system(size: 40, weight: .semibold))
                         .foregroundStyle(.black)
-                        .position(x: touchLocation.x, y: max(32, touchLocation.y - 70))
+                        .position(x: touchLocation.x, y: max(20, touchLocation.y - 70))
                         .allowsHitTesting(false)
                         .accessibilityHidden(true)
                 }

@@ -56,7 +56,7 @@ private struct WelcomeHeading: View {
             Text("Welcome to")
                 .font(.system(.title2, weight: .bold))
 
-            Text(verbatim: "Geogworld")
+            Text(verbatim: "GeogWorld")
                 .kerning(-1)
                 .font(.system(size: titleSize, weight: .bold))
                 .lineLimit(1)

@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct TopicSelectionView: View {
+    @Environment(\.dismiss) private var dismiss
+
     var body: some View {
         ZStack {
             MovingBlueBackground()
@@ -36,6 +38,18 @@ struct TopicSelectionView: View {
                 .padding(24)
                 .frame(maxWidth: 600, alignment: .leading)
                 .frame(maxWidth: .infinity)
+            }
+        }
+        .navigationBarBackButtonHidden()
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "globe.badge.chevron.backward")
+                        .font(.body)
+                }
+                .accessibilityLabel("Back")
             }
         }
         .navigationBarTitleDisplayMode(.inline)
