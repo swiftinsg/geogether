@@ -18,7 +18,8 @@ struct TopicSelectionView: View {
                         TopicCard(
                             title: "Sustainable Housing",
                             symbol: "house.fill",
-                            color: Color(red: 0.14, green: 0.55, blue: 0.38)
+                            color: Color(red: 0.14, green: 0.55, blue: 0.38),
+                            isSustainableHousing: true
                         )
                         TopicCard(
                             title: "Mangrove & Rainforest",
@@ -45,10 +46,15 @@ private struct TopicCard: View {
     let title: LocalizedStringKey
     let symbol: String
     let color: Color
+    var isSustainableHousing = false
 
     var body: some View {
         NavigationLink {
-            TopicDetailView(title: title, symbol: symbol)
+            if isSustainableHousing {
+                SustainableHousingView()
+            } else {
+                TopicDetailView(title: title, symbol: symbol)
+            }
         } label: {
             HStack(spacing: 16) {
                 Image(systemName: symbol)

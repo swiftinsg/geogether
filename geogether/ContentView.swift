@@ -24,14 +24,15 @@ struct ContentView: View {
                         NavigationLink {
                             TopicSelectionView()
                         } label: {
-                            HStack(spacing: 12) {
+                            HStack(spacing: 8) {
                                 Text("Start Adventure")
                                 Image(systemName: "arrow.right")
                             }
-                            .font(.system(.title2, design: .default, weight: .bold))
+                            .font(.system(.headline, design: .default, weight: .bold))
                             .foregroundStyle(darkBlue)
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 20)
+                            .padding(.horizontal, 18)
+                            .padding(.vertical, 12)
+                            .frame(minHeight: 44)
                             .background(.white, in: Capsule())
                             .shadow(color: darkBlue.opacity(0.22), radius: 14, y: 7)
                         }
@@ -48,12 +49,12 @@ struct ContentView: View {
 }
 
 private struct WelcomeHeading: View {
-    @ScaledMetric(relativeTo: .largeTitle) private var titleSize = 60
+    @ScaledMetric(relativeTo: .largeTitle) private var titleSize = 44
 
     var body: some View {
-        VStack(spacing: -5) {
+        VStack(spacing: 2) {
             Text("Welcome to")
-                .font(.system(.largeTitle, weight: .bold))
+                .font(.system(.title2, weight: .bold))
 
             Text(verbatim: "Geogworld")
                 .kerning(-1)
