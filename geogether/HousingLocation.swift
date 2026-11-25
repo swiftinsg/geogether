@@ -7,12 +7,12 @@ enum HousingLocation: String, CaseIterable, Identifiable {
 
     var title: LocalizedStringResource {
         switch self {
-        case .community: "Community centre"
-        case .homes: "Public housing"
-        case .dining: "Hawker center"
+        case .community: "Community Centre"
+        case .homes: "Public Housing"
+        case .dining: "Hawker Center"
         case .school: "School"
         case .playground: "Playground"
-        case .garden: "Community garden"
+        case .garden: "Park"
         }
     }
 
@@ -23,7 +23,7 @@ enum HousingLocation: String, CaseIterable, Identifiable {
         case .dining: "fork.knife"
         case .school: "graduationcap.fill"
         case .playground: "figure.play"
-        case .garden: "leaf.fill"
+        case .garden: "tree.fill"
         }
     }
 

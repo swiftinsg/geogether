@@ -101,22 +101,69 @@ struct CityMapArtwork: View {
             }
         }
 
-        // School, red pitched roof, courtyard and playing court.
-        building(CGRect(x: 539, y: 429, width: 140, height: 75), roof: Color(red: 0.74, green: 0.36, blue: 0.32), floors: 2, in: context)
-        polygon([CGPoint(x: 535, y: 429), CGPoint(x: 609, y: 401), CGPoint(x: 683, y: 429)], color: Color(red: 0.85, green: 0.46, blue: 0.37), in: context)
-        rounded(CGRect(x: 552, y: 542, width: 116, height: 60), radius: 4, color: Color(red: 0.56, green: 0.70, blue: 0.60), in: context)
-        context.stroke(Path(CGRect(x: 559, y: 549, width: 102, height: 46)), with: .color(.white.opacity(0.8)), lineWidth: 2)
-        context.stroke(Path(ellipseIn: CGRect(x: 596, y: 559, width: 28, height: 28)), with: .color(.white.opacity(0.8)), lineWidth: 2)
-
-        // Playground with a loop path, climbing frame, slide and swings.
-        rounded(CGRect(x: 37, y: 790, width: 150, height: 160), radius: 65, color: Color(red: 0.92, green: 0.83, blue: 0.64), in: context)
-        rounded(CGRect(x: 49, y: 802, width: 126, height: 136), radius: 56, color: Color(red: 0.75, green: 0.82, blue: 0.58), in: context)
-        rounded(CGRect(x: 72, y: 831, width: 49, height: 43), radius: 5, color: Color(red: 0.47, green: 0.65, blue: 0.69), in: context)
-        rounded(CGRect(x: 89, y: 859, width: 21, height: 58), radius: 8, color: Color(red: 0.87, green: 0.48, blue: 0.36), in: context)
-        for x in [CGFloat(139), 163] {
-            rounded(CGRect(x: x, y: 833, width: 4, height: 52), radius: 2, color: Color(red: 0.47, green: 0.39, blue: 0.28), in: context)
+        // A small school drawn with loose, pencil-like strokes.
+        let schoolInk = Color(red: 0.42, green: 0.43, blue: 0.38).opacity(0.78)
+        var school = Path()
+        school.move(to: CGPoint(x: 546, y: 491))
+        school.addLine(to: CGPoint(x: 548, y: 438))
+        school.addLine(to: CGPoint(x: 580, y: 438))
+        school.addLine(to: CGPoint(x: 608, y: 414))
+        school.addLine(to: CGPoint(x: 638, y: 438))
+        school.addLine(to: CGPoint(x: 673, y: 436))
+        school.addLine(to: CGPoint(x: 675, y: 492))
+        school.addLine(to: CGPoint(x: 546, y: 491))
+        school.move(to: CGPoint(x: 551, y: 434))
+        school.addLine(to: CGPoint(x: 609, y: 410))
+        school.addLine(to: CGPoint(x: 679, y: 435))
+        school.move(to: CGPoint(x: 610, y: 415))
+        school.addLine(to: CGPoint(x: 609, y: 492))
+        context.stroke(school, with: .color(schoolInk), style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+        for window in [CGRect(x: 558, y: 451, width: 15, height: 17), CGRect(x: 582, y: 451, width: 15, height: 17), CGRect(x: 621, y: 451, width: 15, height: 17), CGRect(x: 647, y: 451, width: 15, height: 17)] {
+            context.stroke(Path(roundedRect: window, cornerRadius: 1), with: .color(schoolInk), lineWidth: 2)
         }
-        rounded(CGRect(x: 133, y: 832, width: 40, height: 5), radius: 2, color: Color(red: 0.47, green: 0.39, blue: 0.28), in: context)
+        context.stroke(Path(CGRect(x: 600, y: 461, width: 17, height: 31)), with: .color(schoolInk), lineWidth: 2)
+        context.stroke(Path(CGRect(x: 552, y: 542, width: 116, height: 60)), with: .color(schoolInk.opacity(0.65)), style: StrokeStyle(lineWidth: 2, dash: [5, 4]))
+        context.stroke(Path(CGRect(x: 560, y: 550, width: 100, height: 44)), with: .color(schoolInk.opacity(0.65)), lineWidth: 1.5)
+        context.stroke(Path(ellipseIn: CGRect(x: 596, y: 558, width: 27, height: 27)), with: .color(schoolInk.opacity(0.65)), lineWidth: 1.5)
+
+        // A welcoming playground with a soft play surface and colorful equipment.
+        rounded(CGRect(x: 37, y: 790, width: 150, height: 160), radius: 30, color: Color(red: 0.93, green: 0.85, blue: 0.68), in: context)
+        rounded(CGRect(x: 45, y: 798, width: 134, height: 144), radius: 26, color: Color(red: 0.79, green: 0.86, blue: 0.66), in: context)
+        // Play tower and roof.
+        rounded(CGRect(x: 63, y: 825, width: 52, height: 7), radius: 3, color: Color(red: 0.27, green: 0.53, blue: 0.62), in: context)
+        rounded(CGRect(x: 68, y: 800, width: 7, height: 28), radius: 3, color: Color(red: 0.32, green: 0.58, blue: 0.66), in: context)
+        rounded(CGRect(x: 104, y: 800, width: 7, height: 28), radius: 3, color: Color(red: 0.32, green: 0.58, blue: 0.66), in: context)
+        polygon([CGPoint(x: 64, y: 801), CGPoint(x: 88, y: 787), CGPoint(x: 115, y: 801)], color: Color(red: 0.94, green: 0.62, blue: 0.35), in: context)
+        for y in [CGFloat(807), 815, 823] {
+            rounded(CGRect(x: 69, y: y, width: 41, height: 3), radius: 1.5, color: Color(red: 0.25, green: 0.46, blue: 0.53), in: context)
+        }
+        // Curved slide ending on a small landing pad.
+        var slide = Path()
+        slide.move(to: CGPoint(x: 114, y: 824))
+        slide.addCurve(to: CGPoint(x: 143, y: 851), control1: CGPoint(x: 123, y: 829), control2: CGPoint(x: 127, y: 848))
+        slide.addLine(to: CGPoint(x: 143, y: 856))
+        context.stroke(slide, with: .color(Color(red: 0.91, green: 0.48, blue: 0.38)), style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
+        rounded(CGRect(x: 136, y: 855, width: 16, height: 5), radius: 2, color: Color(red: 0.91, green: 0.48, blue: 0.38), in: context)
+        // A tidy swing set with two seats.
+        var swingFrame = Path()
+        swingFrame.move(to: CGPoint(x: 146, y: 802))
+        swingFrame.addLine(to: CGPoint(x: 161, y: 829))
+        swingFrame.move(to: CGPoint(x: 178, y: 802))
+        swingFrame.addLine(to: CGPoint(x: 161, y: 829))
+        swingFrame.move(to: CGPoint(x: 146, y: 802))
+        swingFrame.addLine(to: CGPoint(x: 178, y: 802))
+        context.stroke(swingFrame, with: .color(Color(red: 0.48, green: 0.39, blue: 0.29)), style: StrokeStyle(lineWidth: 3, lineCap: .round))
+        for x in [CGFloat(153), 171] {
+            var swing = Path()
+            swing.move(to: CGPoint(x: x, y: 804))
+            swing.addLine(to: CGPoint(x: x, y: 836))
+            context.stroke(swing, with: .color(Color(red: 0.48, green: 0.39, blue: 0.29)), lineWidth: 1.5)
+            rounded(CGRect(x: x - 5, y: 836, width: 10, height: 4), radius: 2, color: Color(red: 0.45, green: 0.66, blue: 0.73), in: context)
+        }
+        // Stepping pads add a little detail without crowding the play area.
+        for point in [CGPoint(x: 61, y: 870), CGPoint(x: 82, y: 888), CGPoint(x: 109, y: 882)] {
+            context.fill(Path(ellipseIn: CGRect(x: point.x, y: point.y, width: 12, height: 7)), with: .color(Color(red: 0.93, green: 0.73, blue: 0.48).opacity(0.8)))
+        }
 
         // Central green with a fountain and footpaths.
         rounded(CGRect(x: 292, y: 771, width: 136, height: 228), radius: 62, color: Color(red: 0.66, green: 0.78, blue: 0.57), in: context)
@@ -126,16 +173,22 @@ struct CityMapArtwork: View {
         context.fill(Path(ellipseIn: CGRect(x: 336, y: 846, width: 48, height: 48)), with: .color(Color(red: 0.48, green: 0.74, blue: 0.80)))
         context.fill(Path(ellipseIn: CGRect(x: 351, y: 861, width: 18, height: 18)), with: .color(.white.opacity(0.75)))
 
-        // Community garden with raised planting beds.
-        rounded(CGRect(x: 540, y: 787, width: 140, height: 179), radius: 12, color: Color(red: 0.82, green: 0.76, blue: 0.59), in: context)
-        for x in [CGFloat(552), 615] {
-            for y in [CGFloat(801), 855, 909] {
-                rounded(CGRect(x: x, y: y, width: 50, height: 40), radius: 5, color: Color(red: 0.51, green: 0.42, blue: 0.29), in: context)
-                for plant in 0..<3 {
-                    context.fill(Path(ellipseIn: CGRect(x: x + 5 + CGFloat(plant) * 13, y: y + 7, width: 14, height: 25)), with: .color(Color(red: 0.44, green: 0.64, blue: 0.35)))
-                }
-            }
+        // Community park with a winding path, pond and benches.
+        rounded(CGRect(x: 540, y: 787, width: 140, height: 179), radius: 32, color: Color(red: 0.67, green: 0.79, blue: 0.59), in: context)
+        var parkPath = Path()
+        parkPath.move(to: CGPoint(x: 552, y: 945))
+        parkPath.addCurve(to: CGPoint(x: 667, y: 805), control1: CGPoint(x: 625, y: 934), control2: CGPoint(x: 588, y: 829))
+        context.stroke(parkPath, with: .color(Color(red: 0.94, green: 0.89, blue: 0.74)), style: StrokeStyle(lineWidth: 13, lineCap: .round))
+        context.fill(Path(ellipseIn: CGRect(x: 582, y: 859, width: 47, height: 31)), with: .color(Color(red: 0.48, green: 0.73, blue: 0.78)))
+        context.stroke(Path(ellipseIn: CGRect(x: 582, y: 859, width: 47, height: 31)), with: .color(.white.opacity(0.65)), lineWidth: 2)
+        for x in [CGFloat(555), 646] {
+            rounded(CGRect(x: x, y: 824, width: 23, height: 5), radius: 2, color: Color(red: 0.52, green: 0.39, blue: 0.28), in: context)
+            rounded(CGRect(x: x + 3, y: 820, width: 3, height: 13), radius: 1, color: Color(red: 0.52, green: 0.39, blue: 0.28), in: context)
+            rounded(CGRect(x: x + 19, y: 820, width: 3, height: 13), radius: 1, color: Color(red: 0.52, green: 0.39, blue: 0.28), in: context)
         }
+        tree(x: 564, y: 905, in: context)
+        tree(x: 656, y: 914, in: context)
+        tree(x: 616, y: 808, in: context)
 
         for point in [
             CGPoint(x: 37, y: 52), CGPoint(x: 188, y: 52), CGPoint(x: 300, y: 44),

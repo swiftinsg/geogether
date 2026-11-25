@@ -102,6 +102,12 @@ private struct FloatingHousingPlot: View {
                         NeighbourhoodSchoolArtwork()
                     } else if location == .garden {
                         NeighbourhoodParkArtwork()
+                    } else if location == .playground {
+                        NeighbourhoodPlaygroundArtwork()
+                    } else if location == .homes {
+                        PublicHousingArtwork()
+                    } else if location == .dining {
+                        HawkerCentreArtwork()
                     } else {
                         Image("SustainableHousingMap")
                             .resizable()
@@ -158,6 +164,117 @@ private struct NeighbourhoodSchoolArtwork: View {
                 context.fill(Path(ellipseIn: CGRect(x: x - 15, y: 107, width: 30, height: 32)), with: .color(Color(red: 0.30, green: 0.55, blue: 0.39)))
                 context.fill(Path(ellipseIn: CGRect(x: x - 10, y: 102, width: 22, height: 25)), with: .color(Color(red: 0.45, green: 0.68, blue: 0.45)))
             }
+        }
+    }
+}
+
+private struct HawkerCentreArtwork: View {
+    var body: some View {
+        Canvas { context, size in
+            context.scaleBy(x: size.width / 300, y: size.height / 190)
+            context.fill(Path(CGRect(x: 0, y: 0, width: 300, height: 190)), with: .color(Color(red: 0.72, green: 0.84, blue: 0.81)))
+            context.fill(Path(CGRect(x: 0, y: 142, width: 300, height: 48)), with: .color(Color(red: 0.48, green: 0.65, blue: 0.43)))
+            // Low, open-air food centre with a broad metal roof.
+            context.fill(Path(CGRect(x: 26, y: 58, width: 248, height: 94)), with: .color(Color(red: 0.86, green: 0.79, blue: 0.65)))
+            context.fill(Path(CGRect(x: 20, y: 48, width: 260, height: 14)), with: .color(Color(red: 0.48, green: 0.56, blue: 0.53)))
+            context.fill(Path(CGRect(x: 34, y: 63, width: 232, height: 8)), with: .color(Color(red: 0.78, green: 0.43, blue: 0.31)))
+            // Open stalls, signs, counters and service windows.
+            for (index, x) in [CGFloat(39), 96, 153, 210].enumerated() {
+                context.fill(Path(CGRect(x: x, y: 76, width: 49, height: 57)), with: .color(Color(red: 0.96, green: 0.89, blue: 0.73)))
+                context.fill(Path(CGRect(x: x, y: 76, width: 49, height: 13)), with: .color([Color(red: 0.77, green: 0.40, blue: 0.30), Color(red: 0.34, green: 0.57, blue: 0.54), Color(red: 0.82, green: 0.60, blue: 0.31), Color(red: 0.40, green: 0.53, blue: 0.65)][index]))
+                context.fill(Path(CGRect(x: x + 5, y: 95, width: 39, height: 20)), with: .color(Color(red: 0.65, green: 0.75, blue: 0.72)))
+                context.fill(Path(CGRect(x: x - 2, y: 118, width: 53, height: 7)), with: .color(Color(red: 0.63, green: 0.42, blue: 0.29)))
+                context.fill(Path(CGRect(x: x + 3, y: 125, width: 4, height: 8)), with: .color(Color(red: 0.50, green: 0.43, blue: 0.34)))
+                context.fill(Path(CGRect(x: x + 42, y: 125, width: 4, height: 8)), with: .color(Color(red: 0.50, green: 0.43, blue: 0.34)))
+            }
+            // Shared dining tables, stools and a tiled walkway.
+            context.fill(Path(CGRect(x: 18, y: 151, width: 264, height: 6)), with: .color(Color(red: 0.88, green: 0.80, blue: 0.65)))
+            for x in [CGFloat(69), 150, 231] {
+                context.fill(Path(roundedRect: CGRect(x: x, y: 141, width: 30, height: 4), cornerRadius: 2), with: .color(Color(red: 0.57, green: 0.39, blue: 0.28)))
+                for seatX in [x + 3, x + 23] {
+                    context.fill(Path(ellipseIn: CGRect(x: seatX, y: 147, width: 7, height: 6)), with: .color(Color(red: 0.77, green: 0.51, blue: 0.35)))
+                }
+            }
+            context.fill(Path(ellipseIn: CGRect(x: 12, y: 122, width: 22, height: 31)), with: .color(Color(red: 0.32, green: 0.56, blue: 0.39)))
+            context.fill(Path(ellipseIn: CGRect(x: 267, y: 118, width: 25, height: 35)), with: .color(Color(red: 0.34, green: 0.58, blue: 0.40)))
+        }
+    }
+}
+
+private struct PublicHousingArtwork: View {
+    var body: some View {
+        Canvas { context, size in
+            context.scaleBy(x: size.width / 190, y: size.height / 190)
+            context.fill(Path(CGRect(x: 0, y: 0, width: 190, height: 190)), with: .color(Color(red: 0.73, green: 0.84, blue: 0.79)))
+            context.fill(Path(CGRect(x: 0, y: 142, width: 190, height: 48)), with: .color(Color(red: 0.46, green: 0.65, blue: 0.43)))
+            // A recognizable Singapore public housing block, with sheltered ground floor.
+            context.fill(Path(CGRect(x: 28, y: 34, width: 139, height: 117)), with: .color(Color(red: 0.78, green: 0.73, blue: 0.62)))
+            context.fill(Path(CGRect(x: 23, y: 28, width: 149, height: 11)), with: .color(Color(red: 0.57, green: 0.62, blue: 0.57)))
+            context.fill(Path(CGRect(x: 28, y: 134, width: 139, height: 17)), with: .color(Color(red: 0.53, green: 0.59, blue: 0.55)))
+            for row in 0..<5 {
+                for column in 0..<5 {
+                    let x = CGFloat(37 + column * 25)
+                    let y = CGFloat(47 + row * 17)
+                    context.fill(Path(CGRect(x: x, y: y, width: 17, height: 10)), with: .color(Color(red: 0.44, green: 0.67, blue: 0.70)))
+                    context.stroke(Path(CGRect(x: x, y: y + 7, width: 17, height: 2)), with: .color(Color(red: 0.89, green: 0.85, blue: 0.74)), lineWidth: 1)
+                }
+            }
+            // Void deck openings, lift lobby, and block number.
+            for x in [CGFloat(44), 83, 122] {
+                context.fill(Path(roundedRect: CGRect(x: x, y: 137, width: 23, height: 14), cornerRadius: 5), with: .color(Color(red: 0.36, green: 0.46, blue: 0.43)))
+            }
+            context.fill(Path(CGRect(x: 88, y: 121, width: 17, height: 30)), with: .color(Color(red: 0.84, green: 0.78, blue: 0.64)))
+            context.fill(Path(ellipseIn: CGRect(x: 11, y: 135, width: 24, height: 26)), with: .color(Color(red: 0.29, green: 0.54, blue: 0.37)))
+            context.fill(Path(ellipseIn: CGRect(x: 151, y: 133, width: 27, height: 29)), with: .color(Color(red: 0.31, green: 0.57, blue: 0.39)))
+            context.fill(Path(CGRect(x: 0, y: 164, width: 190, height: 26)), with: .color(Color(red: 0.85, green: 0.78, blue: 0.64)))
+        }
+    }
+}
+
+private struct NeighbourhoodPlaygroundArtwork: View {
+    var body: some View {
+        Canvas { context, size in
+            context.scaleBy(x: size.width / 190, y: size.height / 160)
+            context.fill(Path(CGRect(x: 0, y: 0, width: 190, height: 160)), with: .color(Color(red: 0.72, green: 0.83, blue: 0.66)))
+            context.fill(Path(roundedRect: CGRect(x: 10, y: 10, width: 170, height: 140), cornerRadius: 30), with: .color(Color(red: 0.89, green: 0.78, blue: 0.60)))
+            context.fill(Path(roundedRect: CGRect(x: 16, y: 16, width: 158, height: 128), cornerRadius: 26), with: .color(Color(red: 0.80, green: 0.84, blue: 0.67)))
+            // Rubber play surfacing and stepping pads.
+            context.fill(Path(roundedRect: CGRect(x: 25, y: 28, width: 108, height: 99), cornerRadius: 22), with: .color(Color(red: 0.78, green: 0.73, blue: 0.64)))
+            for (x, y) in [(33.0, 112.0), (58.0, 129.0), (91.0, 119.0), (126.0, 132.0)] {
+                context.fill(Path(ellipseIn: CGRect(x: x, y: y, width: 15, height: 7)), with: .color(Color(red: 0.91, green: 0.85, blue: 0.71)))
+            }
+            // Raised play platform with safety rails and a small roof.
+            context.fill(Path(roundedRect: CGRect(x: 48, y: 65, width: 51, height: 7), cornerRadius: 3), with: .color(Color(red: 0.39, green: 0.56, blue: 0.57)))
+            for x in [52.0, 92.0] {
+                context.fill(Path(roundedRect: CGRect(x: x, y: 36, width: 6, height: 32), cornerRadius: 2), with: .color(Color(red: 0.42, green: 0.54, blue: 0.51)))
+            }
+            var roof = Path()
+            roof.move(to: CGPoint(x: 43, y: 39))
+            roof.addLine(to: CGPoint(x: 75, y: 22))
+            roof.addLine(to: CGPoint(x: 106, y: 39))
+            roof.closeSubpath()
+            context.fill(roof, with: .color(Color(red: 0.88, green: 0.54, blue: 0.37)))
+            var slide = Path()
+            slide.move(to: CGPoint(x: 100, y: 68))
+            slide.addCurve(to: CGPoint(x: 125, y: 101), control1: CGPoint(x: 117, y: 72), control2: CGPoint(x: 112, y: 96))
+            slide.addLine(to: CGPoint(x: 136, y: 101))
+            context.stroke(slide, with: .color(Color(red: 0.78, green: 0.42, blue: 0.35)), style: StrokeStyle(lineWidth: 7, lineCap: .round, lineJoin: .round))
+            // A-frame swings, crossbar, chains and two seats.
+            var frame = Path()
+            frame.move(to: CGPoint(x: 143, y: 34))
+            frame.addLine(to: CGPoint(x: 160, y: 64))
+            frame.move(to: CGPoint(x: 177, y: 34))
+            frame.addLine(to: CGPoint(x: 160, y: 64))
+            frame.move(to: CGPoint(x: 143, y: 34))
+            frame.addLine(to: CGPoint(x: 177, y: 34))
+            context.stroke(frame, with: .color(Color(red: 0.39, green: 0.37, blue: 0.32)), style: StrokeStyle(lineWidth: 3, lineCap: .round))
+            for x in [150.0, 169.0] {
+                context.stroke(Path(CGRect(x: x, y: 37, width: 1, height: 35)), with: .color(Color(red: 0.42, green: 0.40, blue: 0.35)), lineWidth: 1.5)
+                context.fill(Path(roundedRect: CGRect(x: x - 4, y: 71, width: 9, height: 4), cornerRadius: 2), with: .color(Color(red: 0.45, green: 0.60, blue: 0.65)))
+            }
+            // A shade tree softens the edge of the play area.
+            context.fill(Path(CGRect(x: 20, y: 86, width: 4, height: 28)), with: .color(Color(red: 0.48, green: 0.39, blue: 0.28)))
+            context.fill(Path(ellipseIn: CGRect(x: 8, y: 67, width: 29, height: 29)), with: .color(Color(red: 0.35, green: 0.59, blue: 0.39)))
         }
     }
 }
