@@ -2,6 +2,7 @@ import SwiftUI
 
 struct HousingMapScene: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Namespace private var communityTransition
 
     var body: some View {
         GeometryReader { geometry in
@@ -13,7 +14,7 @@ struct HousingMapScene: View {
                     HousingMapRoads(time: time, isMoving: !reduceMotion)
 
                     ForEach(HousingLocation.allCases) { location in
-                        HousingPlotLink(location: location, time: time, scale: scale, isMoving: !reduceMotion)
+                        HousingPlotLink(location: location, time: time, scale: scale, isMoving: !reduceMotion, transitionNamespace: communityTransition)
                     }
                 }
             }
@@ -28,21 +29,28 @@ private struct HousingPlotLink: View {
     let time: TimeInterval
     let scale: CGFloat
     let isMoving: Bool
+    let transitionNamespace: Namespace.ID
     @ScaledMetric(relativeTo: .caption) private var labelHeight: CGFloat = 40
 
     var body: some View {
         let position = location.scenePosition(at: time, isMoving: isMoving)
         let phase = time * 1.2 + location.motionPhase
         let glow = isMoving ? 0.75 + sin(phase) * 0.25 : 0.85
-        let angle = Angle.degrees(isMoving ? sin(phase) * 4 : 0)
+        let angle = Angle.degrees(isMoving && location != .community ? sin(phase) * 4 : 0)
 
         NavigationLink {
-            HousingLocationDetailView(location: location)
+            if location == .community && isMoving {
+                HousingLocationDetailView(location: location)
+                    .navigationTransition(.zoom(sourceID: location.id, in: transitionNamespace))
+            } else {
+                HousingLocationDetailView(location: location)
+            }
         } label: {
             VStack(spacing: 12) {
                 FloatingHousingPlot(location: location, glow: glow)
                     .frame(width: location.sceneSize.width * scale, height: location.sceneSize.height * scale)
                     .rotation3DEffect(angle, axis: (x: 1, y: 0.5, z: 0), perspective: 0.35)
+                    .matchedTransitionSource(id: location.id, in: transitionNamespace)
 
                 Text(location.title)
                     .font(.caption.weight(.semibold))
@@ -93,24 +101,31 @@ private struct FloatingHousingPlot: View {
 
                 // Display an independent window onto the original artwork.
                 // The drawing stays unchanged while its six pieces move separately.
-                Image("SustainableHousingMap")
-                    .resizable()
-                    .frame(width: imageWidth, height: imageWidth)
-                    .offset(x: -crop.minX * imageWidth, y: -crop.minY * imageWidth)
-                    .frame(
-                        width: geometry.size.width - inset * 2,
-                        height: geometry.size.height - inset * 2,
-                        alignment: .topLeading
-                    )
-                    .clipped()
-                    .clipShape(
-                        UnevenRoundedRectangle(
-                            topLeadingRadius: location == .school ? geometry.size.height * 0.6 : max(0, cornerRadius - inset),
-                            bottomLeadingRadius: max(0, cornerRadius - inset),
-                            bottomTrailingRadius: max(0, cornerRadius - inset),
-                            topTrailingRadius: max(0, cornerRadius - inset)
+                if location == .community {
+                    CommunityCentreArtwork()
+                        .frame(width: geometry.size.width - inset * 2, height: geometry.size.height - inset * 2)
+                        .padding(inset)
+                } else {
+                    Image("SustainableHousingMap")
+                        .resizable()
+                        .frame(width: imageWidth, height: imageWidth)
+                        .offset(x: -crop.minX * imageWidth, y: -crop.minY * imageWidth)
+                        .frame(
+                            width: geometry.size.width - inset * 2,
+                            height: geometry.size.height - inset * 2,
+                            alignment: .topLeading
                         )
-                    )
+                        .clipped()
+                        .clipShape(
+                            UnevenRoundedRectangle(
+                                topLeadingRadius: location == .school ? geometry.size.height * 0.6 : max(0, cornerRadius - inset),
+                                bottomLeadingRadius: max(0, cornerRadius - inset),
+                                bottomTrailingRadius: max(0, cornerRadius - inset),
+                                topTrailingRadius: max(0, cornerRadius - inset)
+                            )
+                        )
+    
+                }
 
                 shape
                     .strokeBorder(Color(red: 1, green: 0.87, blue: 0.46).opacity(glow), lineWidth: 1.5)
