@@ -16,8 +16,6 @@ struct GlobeTouchView<Content: View>: View {
                     Image(systemName: "globe")
                         .font(.system(size: 42, weight: .medium))
                         .foregroundStyle(.white)
-                        .padding(8)
-                        .background(Color.blue.opacity(0.85), in: Circle())
                         .shadow(color: .black.opacity(0.2), radius: 8, y: 3)
                         .position(touchLocation)
                         .allowsHitTesting(false)
