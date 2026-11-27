@@ -24,9 +24,10 @@ struct TopicSelectionView: View {
                             isSustainableHousing: true
                         )
                         TopicCard(
-                            title: "Mangrove & Rainforest",
+                            title: "Mangroves and Rainforests",
                             symbol: "tree.fill",
-                            color: Color(red: 0.04, green: 0.51, blue: 0.53)
+                            color: Color(red: 0.04, green: 0.51, blue: 0.53),
+                            isMangrovesAndRainforests: true
                         )
                         TopicCard(
                             title: "Settlements",
@@ -61,11 +62,14 @@ private struct TopicCard: View {
     let symbol: String
     let color: Color
     var isSustainableHousing = false
+    var isMangrovesAndRainforests = false
 
     var body: some View {
         NavigationLink {
             if isSustainableHousing {
                 SustainableHousingView()
+            } else if isMangrovesAndRainforests {
+                MangrovesAndRainforestsView()
             } else {
                 TopicDetailView(title: title, symbol: symbol)
             }
