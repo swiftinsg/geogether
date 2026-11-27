@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct geogetherApp: App {
+    @StateObject private var touchGlobe = TouchGlobeState()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(touchGlobe)
         }
     }
 }
