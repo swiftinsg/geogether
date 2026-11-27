@@ -162,6 +162,8 @@ private struct StudyPointButtonStyle: ButtonStyle {
 }
 
 private struct StudyPointDetailView: View {
+    @Environment(\.dismiss) private var dismiss
+
     let letter: String
     let title: String
     let color: Color
@@ -236,6 +238,18 @@ private struct StudyPointDetailView: View {
             }
             .padding(24)
             .frame(maxWidth: 600, maxHeight: .infinity, alignment: .topLeading)
+        }
+        .navigationBarBackButtonHidden()
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "globe.badge.chevron.backward")
+                        .font(.body)
+                }
+                .accessibilityLabel("Back")
+            }
         }
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)

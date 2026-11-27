@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct MangrovesAndRainforestsView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var selectedPage = 0
 
     var body: some View {
@@ -14,7 +15,7 @@ struct MangrovesAndRainforestsView: View {
             .tabViewStyle(.page(indexDisplayMode: .never))
 
             HStack {
-                Button("Previous", systemImage: "chevron.left") {
+                Button("Previous", systemImage: "globe.badge.chevron.backward") {
                     selectedPage = 0
                 }
                 .disabled(selectedPage == 0)
@@ -36,6 +37,18 @@ struct MangrovesAndRainforestsView: View {
             .background(.background)
         }
         .background(.green.opacity(0.07))
+        .navigationBarBackButtonHidden()
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "globe.badge.chevron.backward")
+                        .font(.body)
+                }
+                .accessibilityLabel("Back")
+            }
+        }
         .navigationTitle("Mangroves and Rainforests")
         .navigationBarTitleDisplayMode(.inline)
         .tint(Color(red: 0.12, green: 0.42, blue: 0.29))
