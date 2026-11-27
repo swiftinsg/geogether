@@ -15,7 +15,7 @@ struct CommunityCentreView: View {
             .tabViewStyle(.page(indexDisplayMode: .never))
 
             HStack(spacing: 16) {
-                Button("Previous", systemImage: "chevron.left") {
+                Button("Previous", systemImage: "globe.badge.chevron.backward") {
                     changePage(by: -1)
                 }
                 .disabled(selectedPage == 0)
@@ -61,7 +61,7 @@ private struct CommunityCentrePageView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                CommunityCentreArtwork()
+                HousingArtworkButton(location: .community)
                     .frame(maxWidth: 440)
                     .frame(maxWidth: .infinity)
 

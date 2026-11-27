@@ -9,9 +9,11 @@ struct HousingLocationDetailView: View {
         Group {
             if location == .community {
                 CommunityCentreView()
+            } else if location == .school {
+                SchoolView()
             } else {
-                Color(red: 0.96, green: 0.97, blue: 0.94)
-                    .ignoresSafeArea()
+                HousingStudyView(location: location)
+                    .id(location)
             }
         }
         .navigationBarBackButtonHidden()

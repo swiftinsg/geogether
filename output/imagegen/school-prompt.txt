@@ -1,0 +1,3 @@
+Generated with the built-in image generation tool.
+
+Use case: illustration-story. Asset type: school building illustration for a Singapore geography learning app. Reference image: supplied Community Centre artwork for style only. Create a friendly front-facing school building in the same soft rounded hand-painted icon style on a plain white background. Warm cream facade, terracotta red roof, pale blue windows, central entrance and a small clock, low green hedge. Clear readable sign exactly 'SCHOOL'. Whole building centered and fills most of a landscape 3:2 frame with generous white margins, simple polished shapes, no people, no watermark. Match the softness and visual weight of the reference.

@@ -83,8 +83,6 @@ private struct FloatingHousingPlot: View {
             let cornerRadius = min(geometry.size.width, geometry.size.height) * 0.22
             let shape = RoundedRectangle(cornerRadius: cornerRadius)
             let inset: CGFloat = 3
-            let crop = location.mapBounds
-            let imageWidth = (geometry.size.width - inset * 2) / crop.width
 
             ZStack {
                 shape
@@ -95,32 +93,7 @@ private struct FloatingHousingPlot: View {
                 shape
                     .fill(Color(red: 0.76, green: 0.87, blue: 0.68))
 
-                Group {
-                    if location == .community {
-                        CommunityCentreArtwork()
-                    } else if location == .school {
-                        NeighbourhoodSchoolArtwork()
-                    } else if location == .garden {
-                        NeighbourhoodParkArtwork()
-                    } else if location == .playground {
-                        NeighbourhoodPlaygroundArtwork()
-                    } else if location == .homes {
-                        PublicHousingArtwork()
-                    } else if location == .dining {
-                        HawkerCentreArtwork()
-                    } else {
-                        Image("SustainableHousingMap")
-                            .resizable()
-                            .frame(width: imageWidth, height: imageWidth)
-                            .offset(x: -crop.minX * imageWidth, y: -crop.minY * imageWidth)
-                            .frame(
-                                width: geometry.size.width - inset * 2,
-                                height: geometry.size.height - inset * 2,
-                                alignment: .topLeading
-                            )
-                            .clipped()
-                    }
-                }
+                HousingArtwork(location: location)
                 .frame(width: geometry.size.width - inset * 2, height: geometry.size.height - inset * 2)
                 .padding(inset)
                 .clipShape(RoundedRectangle(cornerRadius: max(0, cornerRadius - inset)))

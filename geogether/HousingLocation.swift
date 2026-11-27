@@ -16,6 +16,17 @@ enum HousingLocation: String, CaseIterable, Identifiable {
         }
     }
 
+    var artworkName: String {
+        switch self {
+        case .community: "CommunityCentre"
+        case .homes: "PublicHousing"
+        case .dining: "HawkerCenter"
+        case .school: "School"
+        case .playground: "Playground"
+        case .garden: "Park"
+        }
+    }
+
     var symbol: String {
         switch self {
         case .community: "person.3.fill"
