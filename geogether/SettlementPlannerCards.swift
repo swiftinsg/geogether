@@ -1,12 +1,20 @@
 import SwiftUI
 
+enum PlannerTheme {
+    static let accent = Color(red: 0.19, green: 0.43, blue: 0.76)
+    static let ink = Color.primary
+    static let background = Color(uiColor: .systemGroupedBackground)
+    static let surface = Color(uiColor: .secondarySystemGroupedBackground)
+    static let border = accent.opacity(0.18)
+}
+
 // MARK: - Shared containers
 
 struct PlannerCard<Content: View>: View {
-    var padding: CGFloat = 14
+    var padding: CGFloat = 20
     private let content: Content
 
-    init(padding: CGFloat = 14, @ViewBuilder content: () -> Content) {
+    init(padding: CGFloat = 20, @ViewBuilder content: () -> Content) {
         self.padding = padding
         self.content = content()
     }
@@ -15,10 +23,10 @@ struct PlannerCard<Content: View>: View {
         content
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.white.opacity(0.94), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .background(PlannerTheme.surface, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
             .overlay {
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .strokeBorder(Color(red: 0.80, green: 0.85, blue: 0.76), lineWidth: 1)
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .strokeBorder(PlannerTheme.border, lineWidth: 1)
             }
             .shadow(color: Color(red: 0.24, green: 0.36, blue: 0.25).opacity(0.07), radius: 10, y: 4)
     }
@@ -27,7 +35,7 @@ struct PlannerCard<Content: View>: View {
 struct PlannerPrimaryButton: View {
     let title: String
     var symbol: String?
-    var color = Color(red: 0.20, green: 0.48, blue: 0.34)
+    var color = PlannerTheme.accent
     var isEnabled = true
     let action: () -> Void
 
@@ -42,7 +50,8 @@ struct PlannerPrimaryButton: View {
             .font(.subheadline.weight(.bold))
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 11)
+            .padding(.vertical, 14)
+            .frame(minHeight: 48)
             .background(color.opacity(isEnabled ? 1 : 0.38), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
         .buttonStyle(PlannerPressStyle())
@@ -64,10 +73,11 @@ struct PlannerSecondaryButton: View {
                 Text(title)
             }
             .font(.subheadline.weight(.semibold))
-            .foregroundStyle(Color(red: 0.22, green: 0.36, blue: 0.28))
+            .foregroundStyle(PlannerTheme.accent)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 10)
-            .background(.white, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .padding(.vertical, 14)
+            .frame(minHeight: 48)
+            .background(PlannerTheme.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .strokeBorder(Color(red: 0.75, green: 0.82, blue: 0.72), lineWidth: 1)
@@ -102,11 +112,11 @@ struct CatGuideCard: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Pip the planner")
                     .font(.caption2.weight(.bold))
-                    .foregroundStyle(Color(red: 0.34, green: 0.48, blue: 0.36))
+                    .foregroundStyle(PlannerTheme.accent)
 
                 Text(message)
                     .font(.footnote)
-                    .foregroundStyle(Color(red: 0.20, green: 0.28, blue: 0.22))
+                    .foregroundStyle(PlannerTheme.ink)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
@@ -117,10 +127,10 @@ struct CatGuideCard: View {
                     Image(systemName: canShowHint ? "lightbulb.fill" : "checkmark")
                         .font(.system(size: 14, weight: .bold))
                     Text(canShowHint ? hintLabel : "Done")
-                        .font(.system(size: 8, weight: .bold, design: .rounded))
+                        .font(.caption2.weight(.bold))
                 }
                 .foregroundStyle(canShowHint ? Color(red: 0.55, green: 0.40, blue: 0.10) : Color(red: 0.40, green: 0.52, blue: 0.40))
-                .frame(width: 46, height: 38)
+                .frame(minWidth: 54, minHeight: 48)
                 .background(
                     (canShowHint ? Color(red: 0.98, green: 0.92, blue: 0.72) : Color(red: 0.90, green: 0.94, blue: 0.88)),
                     in: RoundedRectangle(cornerRadius: 12, style: .continuous)
@@ -131,10 +141,10 @@ struct CatGuideCard: View {
             .accessibilityLabel("Show hint")
         }
         .padding(10)
-        .background(.white.opacity(0.92), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .background(PlannerTheme.surface, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(Color(red: 0.80, green: 0.85, blue: 0.76), lineWidth: 1)
+                .strokeBorder(PlannerTheme.border, lineWidth: 1)
         }
     }
 }
@@ -156,10 +166,10 @@ struct SiteSummaryCard: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(site.name)
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(Color(red: 0.18, green: 0.26, blue: 0.20))
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(PlannerTheme.ink)
                 Text(site.subtitle)
-                    .font(.caption2)
+                    .font(.footnote)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -167,19 +177,25 @@ struct SiteSummaryCard: View {
             Spacer(minLength: 2)
 
             if let pattern {
-                Text(pattern.title)
-                    .font(.system(size: 9, weight: .bold, design: .rounded))
+                Label(pattern.title, systemImage: "checkmark.circle.fill")
+                    .font(.caption.weight(.bold))
                     .foregroundStyle(pattern.color)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 3)
                     .background(pattern.color.opacity(0.12), in: Capsule())
             } else if isTested {
-                Image(systemName: "checkmark.circle.fill")
+                Label("Tested", systemImage: "checkmark.circle.fill")
+                    .font(.footnote.weight(.semibold))
                     .foregroundStyle(site.color)
+            } else {
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(PlannerTheme.accent)
+                    .accessibilityHidden(true)
             }
         }
-        .padding(9)
-        .background(.white, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .padding(12)
+        .frame(minHeight: 60)
+        .background(PlannerTheme.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .strokeBorder(site.color.opacity(0.22), lineWidth: 1)
@@ -202,9 +218,9 @@ struct PatternOptionCard: View {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(pattern.title)
                         .font(.subheadline.weight(.bold))
-                        .foregroundStyle(Color(red: 0.18, green: 0.26, blue: 0.20))
+                        .foregroundStyle(PlannerTheme.ink)
                     Text(pattern.shortHint)
-                        .font(.caption2)
+                        .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
 
@@ -216,18 +232,19 @@ struct PatternOptionCard: View {
             }
             .padding(9)
             .background(
-                isSelected ? pattern.color.opacity(0.12) : Color.white,
+                isSelected ? pattern.color.opacity(0.12) : PlannerTheme.surface,
                 in: RoundedRectangle(cornerRadius: 14, style: .continuous)
             )
             .overlay {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .strokeBorder(
-                        isSelected ? pattern.color : Color(red: 0.80, green: 0.85, blue: 0.76),
+                        isSelected ? pattern.color : PlannerTheme.border,
                         lineWidth: isSelected ? 2 : 1
                     )
             }
         }
         .buttonStyle(PlannerPressStyle())
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 
@@ -247,20 +264,20 @@ struct PredictionFeedbackCard: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(result.predictionCorrect ? "Prediction correct" : "Prediction check")
                     .font(.subheadline.weight(.bold))
-                    .foregroundStyle(Color(red: 0.18, green: 0.26, blue: 0.20))
+                    .foregroundStyle(PlannerTheme.ink)
 
                 if result.predictionCorrect {
                     Text("You predicted \(result.prediction.title.lowercased()). \(site.id.title) creates a \(site.pattern.title.lowercased()) pattern.")
-                        .font(.caption)
+                        .font(.footnote)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 } else {
                     Text("You predicted \(result.prediction.title.lowercased()), but \(site.id.title) creates a \(site.pattern.title.lowercased()) pattern.")
-                        .font(.caption)
+                        .font(.footnote)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                     Text(site.pattern.definition)
-                        .font(.caption)
+                        .font(.footnote)
                         .foregroundStyle(Color(red: 0.32, green: 0.40, blue: 0.33))
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -284,9 +301,9 @@ struct PatternRevealCard: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("\(site.id.title) is \(pattern.title.lowercased())")
                     .font(.headline)
-                    .foregroundStyle(Color(red: 0.18, green: 0.26, blue: 0.20))
+                    .foregroundStyle(PlannerTheme.ink)
                 Text(pattern.definition)
-                    .font(.caption)
+                    .font(.footnote)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -306,18 +323,18 @@ struct MetricTile: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
             Label(title, systemImage: symbol)
-                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .font(.caption.weight(.bold))
                 .foregroundStyle(color)
                 .lineLimit(1)
 
             Text(value)
                 .font(.subheadline.weight(.heavy))
-                .foregroundStyle(Color(red: 0.18, green: 0.26, blue: 0.20))
+                .foregroundStyle(PlannerTheme.ink)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
 
             Text(note)
-                .font(.system(size: 9))
+                .font(.footnote)
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
@@ -346,7 +363,7 @@ struct MapEvidenceCard: View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Map evidence", systemImage: "map.fill")
                 .font(.caption.weight(.bold))
-                .foregroundStyle(Color(red: 0.32, green: 0.46, blue: 0.34))
+                .foregroundStyle(PlannerTheme.accent)
 
             ForEach(Array(items.enumerated()), id: \.offset) { _, item in
                 HStack(alignment: .top, spacing: 7) {
@@ -357,8 +374,8 @@ struct MapEvidenceCard: View {
                         .padding(.top, 1)
 
                     Text(item.text)
-                        .font(.caption)
-                        .foregroundStyle(Color(red: 0.28, green: 0.35, blue: 0.29))
+                        .font(.footnote)
+                        .foregroundStyle(PlannerTheme.ink)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
@@ -374,16 +391,17 @@ struct ComparisonGrid: View {
     private let sites = SettlementMapData.sites
 
     var body: some View {
-        Grid(alignment: .leading, horizontalSpacing: 5, verticalSpacing: 7) {
+        ScrollView(.horizontal) {
+            Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 14) {
             GridRow {
                 Text("")
                 ForEach(sites) { site in
                     VStack(spacing: 1) {
                         Text(site.id.title)
-                            .font(.system(size: 10, weight: .heavy, design: .rounded))
+                            .font(.subheadline.weight(.bold))
                             .foregroundStyle(site.color)
                         Text(model.tested[site.id]?.assessment.pattern.title ?? "Not tested")
-                            .font(.system(size: 8, weight: .semibold, design: .rounded))
+                            .font(.footnote)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.7)
@@ -416,19 +434,23 @@ struct ComparisonGrid: View {
             row("Flood") { site in
                 model.tested[site.id]?.assessment.floodRisk.title ?? "—"
             }
+            }
+            .frame(minWidth: 520)
+            .padding(.bottom, 8)
         }
+        .accessibilityLabel("Site comparison. Scroll horizontally to explore all three sites.")
     }
 
     private func row(_ label: String, value: @escaping (SettlementSite) -> String) -> some View {
         GridRow {
             Text(label)
-                .font(.system(size: 9, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(red: 0.34, green: 0.42, blue: 0.35))
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(PlannerTheme.ink)
 
             ForEach(sites) { site in
                 Text(value(site))
-                    .font(.system(size: 9, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Color(red: 0.24, green: 0.31, blue: 0.25))
+                    .font(.footnote)
+                    .foregroundStyle(PlannerTheme.ink)
                     .lineLimit(2)
                     .minimumScaleFactor(0.7)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -441,39 +463,25 @@ struct RecommendationPicker: View {
     @ObservedObject var model: SettlementPlannerModel
 
     var body: some View {
-        HStack(spacing: 6) {
+        VStack(spacing: 10) {
             ForEach(SettlementMapData.sites) { site in
                 let isSelected = model.recommendation == site.id
-
                 Button {
                     model.recommend(site.id)
                 } label: {
-                    VStack(spacing: 3) {
-                        Text(site.id.title)
-                            .font(.system(size: 10, weight: .heavy, design: .rounded))
-                            .foregroundStyle(site.color)
-                        PatternGlyph(pattern: site.pattern, size: 22)
-                        Text(site.name)
-                            .font(.system(size: 8, weight: .semibold, design: .rounded))
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.65)
+                    HStack(spacing: 12) {
+                        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                            .foregroundStyle(PlannerTheme.accent)
+                            .font(.title3)
+                        SiteSummaryCard(site: site, isTested: true, pattern: site.pattern)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 7)
-                    .background(
-                        isSelected ? site.color.opacity(0.14) : Color.white,
-                        in: RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    )
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .strokeBorder(
-                                isSelected ? site.color : Color(red: 0.80, green: 0.85, blue: 0.76),
-                                lineWidth: isSelected ? 2 : 1
-                            )
-                    }
+                    .padding(12)
+                    .frame(minHeight: 48)
+                    .background(isSelected ? PlannerTheme.accent.opacity(0.1) : .clear,
+                                in: RoundedRectangle(cornerRadius: 18))
                 }
                 .buttonStyle(PlannerPressStyle())
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
             }
         }
     }
@@ -497,21 +505,22 @@ struct EvidenceChipRow: View {
 
                         Image(systemName: chip.symbol)
                             .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(Color(red: 0.32, green: 0.46, blue: 0.34))
+                            .foregroundStyle(PlannerTheme.accent)
                             .frame(width: 14)
                             .padding(.top, 1)
 
                         Text(chip.text)
-                            .font(.caption)
-                            .foregroundStyle(Color(red: 0.24, green: 0.31, blue: 0.25))
+                            .font(.footnote)
+                            .foregroundStyle(PlannerTheme.ink)
                             .fixedSize(horizontal: false, vertical: true)
                             .multilineTextAlignment(.leading)
 
                         Spacer(minLength: 0)
                     }
-                    .padding(8)
+                    .padding(12)
+                    .frame(minHeight: 48)
                     .background(
-                        isSelected ? Color(red: 0.24, green: 0.55, blue: 0.35).opacity(0.09) : Color.white,
+                        isSelected ? Color(red: 0.24, green: 0.55, blue: 0.35).opacity(0.09) : PlannerTheme.surface,
                         in: RoundedRectangle(cornerRadius: 12, style: .continuous)
                     )
                     .overlay {
@@ -523,6 +532,7 @@ struct EvidenceChipRow: View {
                     }
                 }
                 .buttonStyle(PlannerPressStyle())
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
             }
         }
     }
@@ -537,21 +547,21 @@ struct RecommendationSentenceCard: View {
             HStack {
                 Label("Your explanation", systemImage: "text.quote")
                     .font(.caption2.weight(.bold))
-                    .foregroundStyle(Color(red: 0.32, green: 0.46, blue: 0.34))
+                    .foregroundStyle(PlannerTheme.accent)
                 Spacer()
                 Text("\(count)/2+ evidence")
-                    .font(.system(size: 9, weight: .bold, design: .rounded))
+                    .font(.footnote.weight(.semibold))
                     .foregroundStyle(count >= 2 ? Color(red: 0.24, green: 0.55, blue: 0.35) : Color(red: 0.70, green: 0.48, blue: 0.18))
             }
 
             Text(sentence)
-                .font(.caption)
+                .font(.footnote)
                 .italic()
-                .foregroundStyle(Color(red: 0.28, green: 0.35, blue: 0.29))
+                .foregroundStyle(PlannerTheme.ink)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(9)
-        .background(Color(red: 0.96, green: 0.97, blue: 0.92), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .background(PlannerTheme.accent.opacity(0.08), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
 
@@ -572,17 +582,17 @@ struct EventCardView: View {
 
                     VStack(alignment: .leading, spacing: 1) {
                         Text("Event card")
-                            .font(.system(size: 9, weight: .bold, design: .rounded))
+                            .font(.footnote.weight(.semibold))
                             .foregroundStyle(Color(red: 0.72, green: 0.40, blue: 0.22))
                         Text(event.title)
                             .font(.subheadline.weight(.bold))
-                            .foregroundStyle(Color(red: 0.18, green: 0.26, blue: 0.20))
+                            .foregroundStyle(PlannerTheme.ink)
                     }
                 }
 
                 Text(event.prompt)
-                    .font(.caption)
-                    .foregroundStyle(Color(red: 0.28, green: 0.35, blue: 0.29))
+                    .font(.footnote)
+                    .foregroundStyle(PlannerTheme.ink)
                     .fixedSize(horizontal: false, vertical: true)
 
                 VStack(spacing: 6) {
@@ -603,16 +613,17 @@ struct EventCardView: View {
                                     )
 
                                 Text(option.text)
-                                    .font(.caption)
-                                    .foregroundStyle(Color(red: 0.24, green: 0.31, blue: 0.25))
+                                    .font(.footnote)
+                                    .foregroundStyle(PlannerTheme.ink)
                                     .fixedSize(horizontal: false, vertical: true)
                                     .multilineTextAlignment(.leading)
 
                                 Spacer(minLength: 0)
                             }
-                            .padding(8)
+                            .padding(12)
+                            .frame(minHeight: 48)
                             .background(
-                                isSelected ? Color(red: 0.96, green: 0.94, blue: 0.84) : Color.white,
+                                isSelected ? Color(red: 0.96, green: 0.94, blue: 0.84) : PlannerTheme.surface,
                                 in: RoundedRectangle(cornerRadius: 11, style: .continuous)
                             )
                             .overlay {
@@ -625,6 +636,7 @@ struct EventCardView: View {
                         }
                         .buttonStyle(PlannerPressStyle())
                         .disabled(model.eventRevealed)
+                        .accessibilityAddTraits(isSelected ? .isSelected : [])
                     }
                 }
 
@@ -638,17 +650,17 @@ struct EventCardView: View {
                         .foregroundStyle(model.eventCorrect ? Color(red: 0.24, green: 0.55, blue: 0.35) : Color(red: 0.72, green: 0.40, blue: 0.22))
 
                         Text(event.reveal)
-                            .font(.caption)
-                            .foregroundStyle(Color(red: 0.28, green: 0.35, blue: 0.29))
+                            .font(.footnote)
+                            .foregroundStyle(PlannerTheme.ink)
                             .fixedSize(horizontal: false, vertical: true)
 
                         Text(event.evidence)
-                            .font(.caption2)
+                            .font(.footnote)
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     .padding(9)
-                    .background(Color(red: 0.96, green: 0.97, blue: 0.92), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .background(PlannerTheme.accent.opacity(0.08), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
             }
         }
@@ -667,14 +679,14 @@ struct HierarchyLadder: View {
             HStack {
                 Label("Settlement hierarchy", systemImage: "building.2.fill")
                     .font(.caption.weight(.bold))
-                    .foregroundStyle(Color(red: 0.32, green: 0.46, blue: 0.34))
+                    .foregroundStyle(PlannerTheme.accent)
                 Spacer()
                 Text("Simulated")
                     .font(.system(size: 8, weight: .bold, design: .rounded))
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 5)
                     .padding(.vertical, 2)
-                    .background(Color(red: 0.92, green: 0.94, blue: 0.89), in: Capsule())
+                    .background(PlannerTheme.accent.opacity(0.08), in: Capsule())
             }
 
             ScrollView(.horizontal, showsIndicators: false) {
@@ -699,7 +711,7 @@ struct HierarchyLadder: View {
                         .padding(.vertical, 6)
                         .frame(minWidth: 64)
                         .background(
-                            isCurrent ? Color(red: 0.20, green: 0.48, blue: 0.34) : Color(red: 0.94, green: 0.96, blue: 0.91),
+                            isCurrent ? PlannerTheme.accent : PlannerTheme.accent.opacity(0.08),
                             in: RoundedRectangle(cornerRadius: 11, style: .continuous)
                         )
                     }
@@ -707,7 +719,7 @@ struct HierarchyLadder: View {
             }
 
             Text("\(homes) homes, about \(population) people. A village needs more homes and services.")
-                .font(.caption2)
+                .font(.footnote)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -719,7 +731,7 @@ struct FunctionsCard: View {
         VStack(alignment: .leading, spacing: 7) {
             Label("Functions on this map", systemImage: "briefcase.fill")
                 .font(.caption.weight(.bold))
-                .foregroundStyle(Color(red: 0.32, green: 0.46, blue: 0.34))
+                .foregroundStyle(PlannerTheme.accent)
 
             ForEach(SettlementMapData.sectors) { sector in
                 HStack(spacing: 8) {
@@ -731,11 +743,11 @@ struct FunctionsCard: View {
 
                     Text(sector.title)
                         .font(.caption2.weight(.bold))
-                        .foregroundStyle(Color(red: 0.24, green: 0.31, blue: 0.25))
+                        .foregroundStyle(PlannerTheme.ink)
                         .frame(width: 62, alignment: .leading)
 
                     Text(sector.examples)
-                        .font(.caption2)
+                        .font(.footnote)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
 
@@ -754,10 +766,10 @@ struct ServicesCard: View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Services and travel", systemImage: "figure.walk")
                 .font(.caption.weight(.bold))
-                .foregroundStyle(Color(red: 0.32, green: 0.46, blue: 0.34))
+                .foregroundStyle(PlannerTheme.accent)
 
             Text("Low-order services are close together. High-order services are farther away.")
-                .font(.caption2)
+                .font(.footnote)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -796,7 +808,7 @@ private struct ServiceBadge: View {
 
             Text(service.title)
                 .font(.system(size: 8, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(red: 0.24, green: 0.31, blue: 0.25))
+                .foregroundStyle(PlannerTheme.ink)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
 
@@ -806,7 +818,7 @@ private struct ServiceBadge: View {
         }
         .frame(maxWidth: .infinity)
         .padding(6)
-        .background(.white, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+        .background(PlannerTheme.surface, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 11, style: .continuous)
                 .strokeBorder(Color(red: 0.82, green: 0.86, blue: 0.79), lineWidth: 1)
@@ -828,8 +840,8 @@ struct ReportChecklist: View {
                         .foregroundStyle(check.passed ? Color(red: 0.24, green: 0.55, blue: 0.35) : Color(red: 0.65, green: 0.70, blue: 0.63))
 
                     Text(check.title)
-                        .font(.caption)
-                        .foregroundStyle(Color(red: 0.28, green: 0.35, blue: 0.29))
+                        .font(.footnote)
+                        .foregroundStyle(PlannerTheme.ink)
 
                     Spacer(minLength: 0)
                 }
@@ -854,15 +866,15 @@ struct MapKeyCard: View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Map key", systemImage: "square.grid.3x3.fill")
                 .font(.caption.weight(.bold))
-                .foregroundStyle(Color(red: 0.32, green: 0.46, blue: 0.34))
+                .foregroundStyle(PlannerTheme.accent)
 
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading, spacing: 5) {
                 ForEach(Array(items.enumerated()), id: \.offset) { _, item in
                     HStack(spacing: 5) {
                         TerrainSwatch(terrain: item.0, size: CGSize(width: 24, height: 16))
                         Text(item.1)
-                            .font(.caption2)
-                            .foregroundStyle(Color(red: 0.28, green: 0.35, blue: 0.29))
+                            .font(.footnote)
+                            .foregroundStyle(PlannerTheme.ink)
                     }
                 }
             }
@@ -872,9 +884,14 @@ struct MapKeyCard: View {
                     .font(.system(size: 11, weight: .bold))
                     .foregroundStyle(Color(red: 0.30, green: 0.48, blue: 0.34))
                 Text("Dashed outline = possible site")
-                    .font(.caption2)
+                    .font(.footnote)
                     .foregroundStyle(.secondary)
             }
+
+            Text("Read the letter across the top, then the number down the side. For example, D3 is column D, row 3. Four cells is about a 10-minute walk.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }

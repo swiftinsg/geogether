@@ -176,6 +176,19 @@ private struct CommunityCentrePage: Identifiable {
                 CommunityCentrePoint(id: 0, title: "Support hub", description: "During crises (such as pandemics, haze, or power outages), community centres are used to distribute masks, food, or aid to residents."),
                 CommunityCentrePoint(id: 1, title: "Communication link", description: "Helps town councils and leaders share important news and listen to residents’ feedback.")
             ]
+        ),
+        CommunityCentrePage(
+            id: 4,
+            title: "G3 Exam Tip: PEEL",
+            subtitle: "How do community centres strengthen social cohesion?",
+            symbol: "pencil.and.list.clipboard",
+            colors: [.yellow, .orange, .mint],
+            points: [
+                CommunityCentrePoint(id: 0, title: "• Point", description: "Community centres strengthen social cohesion by bringing residents together."),
+                CommunityCentrePoint(id: 1, title: "• Explain", description: "Shared activities give neighbours of different ages and backgrounds regular opportunities to interact, build friendships and understand one another."),
+                CommunityCentrePoint(id: 2, title: "• Example", description: "Residents join a cooking class at their neighbourhood community centre, where they prepare dishes together and share food from different cultures."),
+                CommunityCentrePoint(id: 3, title: "• Link", description: "These interactions build trust and a sense of belonging, supporting a socially sustainable neighbourhood.")
+            ]
         )
     ]
 }

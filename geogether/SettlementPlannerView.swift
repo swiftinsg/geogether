@@ -1,58 +1,90 @@
 import SwiftUI
 
 struct SettlementPlannerView: View {
-    @StateObject private var model = SettlementPlannerModel()
+    @StateObject private var model: SettlementPlannerModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var showsMapKey = false
 
-    private let background = Color(red: 0.96, green: 0.98, blue: 0.95)
-    private let ink = Color(red: 0.16, green: 0.28, blue: 0.24)
-    private let accent = Color(red: 0.20, green: 0.48, blue: 0.34)
+    private let background = PlannerTheme.background
+    private let ink = PlannerTheme.ink
+    private let accent = PlannerTheme.accent
     private let warning = Color(red: 0.72, green: 0.42, blue: 0.18)
+
+    @MainActor
+    init(model: SettlementPlannerModel? = nil) {
+        _model = StateObject(wrappedValue: model ?? SettlementPlannerModel())
+    }
 
     var body: some View {
         ZStack {
             background.ignoresSafeArea()
 
-            ScrollView {
-                VStack(spacing: 14) {
-                    MissionHeader(progress: progress, stepTitle: stepTitle)
+            ScrollViewReader { scrollProxy in
+                ScrollView {
+                    VStack(spacing: 20) {
+                        MissionHeader(progress: progress, stepTitle: stepTitle)
+                            .id("mission")
 
-                    CatGuideCard(
-                        message: model.catMessage,
-                        hintLabel: model.hintLabel,
-                        canShowHint: model.canShowHint,
-                        onHint: { model.nextHint() }
-                    )
+                        CatGuideCard(
+                            message: model.catMessage,
+                            hintLabel: model.hintLabel,
+                            canShowHint: model.canShowHint,
+                            onHint: { model.nextHint() }
+                        )
 
-                    mapSection
+                        if model.phase == .brief {
+                            briefCard
+                        } else {
+                            PlannerMapHeading(testedCount: model.testedCount)
+                            mapSection
+                                .frame(maxWidth: 480)
+                                .frame(maxWidth: .infinity)
 
-                    phasePanel
+                            PlannerCard {
+                                DisclosureGroup("Map key & how to read the grid", isExpanded: $showsMapKey) {
+                                    MapKeyCard()
+                                        .padding(.top, 12)
+                                }
+                                .font(.subheadline.weight(.semibold))
+                                .tint(accent)
+                            }
 
-                    if model.phase != .report {
-                        PlannerCard {
-                            MapKeyCard()
+                            phasePanel
+                                .id("task")
                         }
                     }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 12)
+                    .padding(.bottom, 32)
+                    .frame(maxWidth: 760)
+                    .frame(maxWidth: .infinity)
                 }
-                .padding(.horizontal, 12)
-                .padding(.top, 8)
-                .padding(.bottom, 30)
-                .frame(maxWidth: 760)
-                .frame(maxWidth: .infinity)
+                .onChange(of: model.phase) { _, phase in
+                    // Bring the new task into view after an action taken farther down the page.
+                    let target = phase == .predicting || phase == .results ? "task" : "mission"
+                    withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) {
+                        scrollProxy.scrollTo(target, anchor: .top)
+                    }
+                }
             }
         }
         .navigationBarBackButtonHidden()
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
-                    dismiss()
+                    if model.phase == .brief {
+                        dismiss()
+                    } else {
+                        model.goBack()
+                    }
                 } label: {
-                    Image(systemName: "globe.badge.chevron.backward")
-                        .font(.body)
+                    Label("Back", systemImage: "chevron.left")
                 }
-                .accessibilityLabel("Back")
+                .accessibilityLabel(model.backButtonTitle)
             }
         }
+        .tint(accent)
         .navigationTitle("Settlements")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -75,7 +107,7 @@ struct SettlementPlannerView: View {
 
     private func handleSiteTap(_ siteID: SettlementSiteID) {
         switch model.phase {
-        case .brief, .placing:
+        case .placing, .results:
             model.placeHomes(at: siteID)
         default:
             break
@@ -115,10 +147,10 @@ struct SettlementPlannerView: View {
                     .fixedSize(horizontal: false, vertical: true)
 
                 VStack(alignment: .leading, spacing: 6) {
-                    BriefPoint(symbol: "hand.draw.fill", text: "Drag the three homes onto a dashed site, or tap a site.")
-                    BriefPoint(symbol: "circle.grid.2x2.fill", text: "Predict the settlement pattern the homes will make.")
-                    BriefPoint(symbol: "map.fill", text: "Test all three sites and compare the map evidence.")
-                    BriefPoint(symbol: "text.quote", text: "Recommend one site with at least two pieces of evidence.")
+                    BriefPoint(symbol: "hand.draw.fill", text: "1. Choose Site A, B or C. Tap a site card or drag the homes on the map.")
+                    BriefPoint(symbol: "circle.grid.2x2.fill", text: "2. Predict the pattern, then test your choice. Every prediction helps you learn.")
+                    BriefPoint(symbol: "map.fill", text: "3. Test all three sites. Compare services, farmland and flood risk.")
+                    BriefPoint(symbol: "text.quote", text: "4. Recommend a site with two pieces of evidence, then predict an event.")
                 }
 
                 PlannerPrimaryButton(title: "Start planning", symbol: "arrow.right") {
@@ -137,7 +169,7 @@ struct SettlementPlannerView: View {
                     Spacer()
                     if model.testedCount > 0 {
                         Text("Tested \(model.testedCount) of 3")
-                            .font(.system(size: 9, weight: .bold, design: .rounded))
+                            .font(.footnote.weight(.semibold))
                             .foregroundStyle(accent)
                             .padding(.horizontal, 7)
                             .padding(.vertical, 3)
@@ -145,8 +177,14 @@ struct SettlementPlannerView: View {
                     }
                 }
 
-                Text("Drag the homes onto a dashed site. You can also tap a site to place them.")
-                    .font(.caption)
+                if model.canCompare {
+                    PlannerPrimaryButton(title: "Continue to recommendation", symbol: "arrow.right") {
+                        model.startComparison()
+                    }
+                }
+
+                Text("Tap an untested site below, or drag the homes onto its dashed spaces on the map. Tested sites open their results.")
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
 
@@ -176,7 +214,7 @@ struct SettlementPlannerView: View {
                 }
 
                 Text("If the three homes are built here, what pattern will they make?")
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
 
@@ -187,6 +225,12 @@ struct SettlementPlannerView: View {
                     ) {
                         model.selectPrediction(pattern)
                     }
+                }
+
+                if model.prediction == nil {
+                    Text("Select one pattern to enable the test.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                 }
 
                 PlannerPrimaryButton(
@@ -258,8 +302,8 @@ struct SettlementPlannerView: View {
                             .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(accent)
                         Text(assessment.roadAccess)
-                            .font(.caption)
-                            .foregroundStyle(Color(red: 0.28, green: 0.35, blue: 0.29))
+                            .font(.subheadline)
+                            .foregroundStyle(PlannerTheme.ink)
                     }
                     .padding(8)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -275,7 +319,7 @@ struct SettlementPlannerView: View {
                         model.startComparison()
                     }
                 } else {
-                    PlannerPrimaryButton(title: "Test another site", symbol: "plus.circle.fill") {
+                    PlannerPrimaryButton(title: "Choose next site (\(3 - model.testedCount) left)", symbol: "plus.circle.fill") {
                         model.testAnother()
                     }
                 }
@@ -289,7 +333,7 @@ struct SettlementPlannerView: View {
                 PhaseLabel(title: "Compare and recommend", symbol: "scale.3d")
 
                 Text("Weigh up access, services, farmland and flood risk. There is no perfect site.")
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
 
@@ -308,11 +352,11 @@ struct SettlementPlannerView: View {
 
                     HStack {
                         Text("Choose at least two pieces of map evidence.")
-                            .font(.caption)
+                            .font(.subheadline)
                             .foregroundStyle(.secondary)
                         Spacer()
                         Text("\(model.selectedEvidence.count) selected")
-                            .font(.system(size: 9, weight: .bold, design: .rounded))
+                            .font(.footnote.weight(.semibold))
                             .foregroundStyle(model.selectedEvidence.count >= 2 ? accent : warning)
                     }
 
@@ -324,8 +368,16 @@ struct SettlementPlannerView: View {
                     )
                 }
 
+                if !model.canContinueToEvent {
+                    Text(model.recommendation == nil
+                         ? "Choose a site to see the evidence you can use."
+                         : "Select at least two pieces of evidence to continue.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+
                 PlannerPrimaryButton(
-                    title: "Continue to event",
+                    title: "Predict an event",
                     symbol: "arrow.right",
                     isEnabled: model.canContinueToEvent
                 ) {
@@ -355,6 +407,11 @@ struct SettlementPlannerView: View {
                         model.finish()
                     }
                 } else {
+                    if model.eventChoice == nil {
+                        Text("Select an answer before checking your prediction.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
                     PlannerPrimaryButton(
                         title: "Check my prediction",
                         symbol: "sparkles",
@@ -380,13 +437,13 @@ struct SettlementPlannerView: View {
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Planner report")
-                                .font(.system(size: 9, weight: .bold, design: .rounded))
+                                .font(.footnote.weight(.semibold))
                                 .foregroundStyle(.secondary)
                             Text("You recommended \(model.recommendationSite?.id.title ?? "a site")")
                                 .font(.headline)
                                 .foregroundStyle(ink)
                             Text(model.recommendationSite?.name ?? "")
-                                .font(.caption)
+                                .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
 
@@ -395,7 +452,7 @@ struct SettlementPlannerView: View {
 
                     Text(model.recommendationSentence)
                         .font(.subheadline)
-                        .foregroundStyle(Color(red: 0.24, green: 0.32, blue: 0.26))
+                        .foregroundStyle(PlannerTheme.ink)
                         .fixedSize(horizontal: false, vertical: true)
 
                     HStack(spacing: 6) {
@@ -414,8 +471,8 @@ struct SettlementPlannerView: View {
                                 .font(.caption.weight(.bold))
                                 .foregroundStyle(accent)
                             Text(site.bestFor)
-                                .font(.caption)
-                                .foregroundStyle(Color(red: 0.28, green: 0.35, blue: 0.29))
+                                .font(.subheadline)
+                                .foregroundStyle(PlannerTheme.ink)
                                 .fixedSize(horizontal: false, vertical: true)
 
                             Label("Trade-off", systemImage: "exclamationmark.triangle.fill")
@@ -423,13 +480,13 @@ struct SettlementPlannerView: View {
                                 .foregroundStyle(warning)
                                 .padding(.top, 2)
                             Text(site.tradeoff)
-                                .font(.caption)
-                                .foregroundStyle(Color(red: 0.28, green: 0.35, blue: 0.29))
+                                .font(.subheadline)
+                                .foregroundStyle(PlannerTheme.ink)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                         .padding(10)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color(red: 0.96, green: 0.97, blue: 0.92), in: RoundedRectangle(cornerRadius: 13, style: .continuous))
+                        .background(PlannerTheme.accent.opacity(0.08), in: RoundedRectangle(cornerRadius: 13, style: .continuous))
                     }
                 }
             }
@@ -467,25 +524,25 @@ struct SettlementPlannerView: View {
 
     private var progress: Double {
         switch model.phase {
-        case .brief: 0.06
-        case .placing: 0.14
-        case .predicting: 0.32
-        case .results: 0.50
-        case .comparing: 0.68
+        case .brief: 0
+        case .placing: 0.1 + Double(model.testedCount) * 0.18
+        case .predicting: 0.14 + Double(model.testedCount) * 0.18
+        case .results: 0.1 + Double(model.testedCount) * 0.18
+        case .comparing: 0.7
         case .event: 0.85
-        case .report: 1.0
+        case .report: 1
         }
     }
 
     private var stepTitle: String {
         switch model.phase {
-        case .brief: "Brief"
-        case .placing: "Choose a site"
-        case .predicting: "Predict"
-        case .results: "Test"
-        case .comparing: "Compare"
-        case .event: "Event"
-        case .report: "Report"
+        case .brief: "Your mission"
+        case .placing: "1 of 3 · Explore"
+        case .predicting: "1 of 3 · Predict"
+        case .results: "1 of 3 · Results"
+        case .comparing: "2 of 3 · Recommend"
+        case .event: "3 of 3 · Event"
+        case .report: "Mission complete"
         }
     }
 }
@@ -496,49 +553,31 @@ private struct MissionHeader: View {
     let progress: Double
     let stepTitle: String
 
-    private let ink = Color(red: 0.16, green: 0.28, blue: 0.24)
-    private let accent = Color(red: 0.20, green: 0.48, blue: 0.34)
+    private let ink = PlannerTheme.ink
+    private let accent = PlannerTheme.accent
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 9) {
-            HStack(spacing: 10) {
-                Image(systemName: "building.2.fill")
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 40, height: 40)
-                    .background(Color(red: 0.19, green: 0.43, blue: 0.76), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        PlannerCard(padding: 20) {
+            VStack(alignment: .leading, spacing: 12) {
+                Label("SETTLEMENT PLANNER", systemImage: "building.2.fill")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(accent)
 
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("MISSION")
-                        .font(.system(size: 9, weight: .heavy, design: .rounded))
-                        .foregroundStyle(.secondary)
-                    Text("Where should new homes go?")
-                        .font(.headline)
-                        .foregroundStyle(ink)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.75)
-                }
-
-                Spacer(minLength: 4)
+                Text("Where should new homes go?")
+                    .font(.title2.bold())
+                    .foregroundStyle(ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityAddTraits(.isHeader)
 
                 Text(stepTitle)
-                    .font(.system(size: 9, weight: .bold, design: .rounded))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(accent)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(accent.opacity(0.10), in: Capsule())
-            }
 
-            ProgressView(value: progress)
-                .tint(accent)
+                ProgressView(value: progress)
+                    .tint(accent)
+                    .accessibilityLabel("Mission progress")
+            }
         }
-        .padding(12)
-        .background(.white.opacity(0.94), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .strokeBorder(Color(red: 0.80, green: 0.85, blue: 0.76), lineWidth: 1)
-        }
-        .shadow(color: Color(red: 0.24, green: 0.36, blue: 0.25).opacity(0.07), radius: 10, y: 4)
     }
 }
 
@@ -550,8 +589,9 @@ private struct PhaseLabel: View {
 
     var body: some View {
         Label(title, systemImage: symbol)
-            .font(.caption.weight(.bold))
-            .foregroundStyle(Color(red: 0.32, green: 0.46, blue: 0.34))
+            .font(.headline)
+            .foregroundStyle(PlannerTheme.accent)
+            .accessibilityAddTraits(.isHeader)
     }
 }
 
@@ -563,13 +603,13 @@ private struct BriefPoint: View {
         HStack(alignment: .top, spacing: 7) {
             Image(systemName: symbol)
                 .font(.system(size: 11, weight: .bold))
-                .foregroundStyle(Color(red: 0.30, green: 0.48, blue: 0.34))
+                .foregroundStyle(PlannerTheme.accent)
                 .frame(width: 15)
                 .padding(.top, 1)
 
             Text(text)
-                .font(.caption)
-                .foregroundStyle(Color(red: 0.28, green: 0.35, blue: 0.29))
+                .font(.subheadline)
+                .foregroundStyle(PlannerTheme.ink)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -583,22 +623,68 @@ private struct ReportStat: View {
         VStack(spacing: 1) {
             Text(value)
                 .font(.system(size: 15, weight: .heavy, design: .rounded))
-                .foregroundStyle(Color(red: 0.20, green: 0.48, blue: 0.34))
+                .foregroundStyle(PlannerTheme.accent)
             Text(label)
-                .font(.system(size: 8, weight: .semibold, design: .rounded))
+                .font(.caption)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 6)
-        .background(Color(red: 0.94, green: 0.96, blue: 0.91), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .background(PlannerTheme.accent.opacity(0.08), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 }
 
 #Preview {
     NavigationStack {
         SettlementPlannerView()
+    }
+    .environmentObject(TouchGlobeState())
+}
+
+
+private struct PlannerMapHeading: View {
+    let testedCount: Int
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack {
+                Label("Explore the map", systemImage: "map")
+                Spacer()
+                Text("\(testedCount) of 3 sites tested")
+            }
+            VStack(alignment: .leading, spacing: 6) {
+                Label("Explore the map", systemImage: "map")
+                Text("\(testedCount) of 3 sites tested")
+            }
+        }
+        .font(.subheadline.weight(.semibold))
+        .foregroundStyle(PlannerTheme.accent)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+#Preview("Choose a site") {
+    let model = SettlementPlannerModel()
+    model.beginPlacing()
+    return NavigationStack {
+        SettlementPlannerView(model: model)
+    }
+    .environmentObject(TouchGlobeState())
+}
+
+#Preview("Compare sites") {
+    let model = SettlementPlannerModel()
+    for site in SettlementMapData.sites {
+        model.placeHomes(at: site.id)
+        model.selectPrediction(site.pattern)
+        model.testPlan()
+        model.testAnother()
+    }
+    model.startComparison()
+    return NavigationStack {
+        SettlementPlannerView(model: model)
     }
     .environmentObject(TouchGlobeState())
 }

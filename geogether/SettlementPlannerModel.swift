@@ -45,6 +45,38 @@ final class SettlementPlannerModel: ObservableObject {
 
     // MARK: Navigation through the mission
 
+    var backButtonTitle: String {
+        switch phase {
+        case .brief: "Back to topics"
+        case .placing: "Back to briefing"
+        case .predicting, .results, .comparing: "Back to sites"
+        case .event: "Back to recommendation"
+        case .report: "Back to event"
+        }
+    }
+
+    func goBack() {
+        switch phase {
+        case .brief:
+            return
+        case .placing:
+            phase = .brief
+        case .predicting, .results, .comparing:
+            placedSite = nil
+            prediction = nil
+            phase = .placing
+        case .event:
+            phase = .comparing
+            placedSite = recommendation
+            prediction = recommendation.flatMap { tested[$0]?.prediction }
+        case .report:
+            phase = .event
+        }
+        hintIndex = 0
+        hoveredSite = nil
+        dropMessage = nil
+    }
+
     func beginPlacing() {
         guard phase == .brief else { return }
         phase = .placing
@@ -54,8 +86,9 @@ final class SettlementPlannerModel: ObservableObject {
     func placeHomes(at siteID: SettlementSiteID) {
         guard phase == .brief || phase == .placing || phase == .results else { return }
         placedSite = siteID
-        prediction = nil
-        phase = .predicting
+        // Reopen completed results without replacing the original prediction.
+        prediction = tested[siteID]?.prediction
+        phase = tested[siteID] == nil ? .predicting : .results
         hintIndex = 0
         dropMessage = nil
         successSignal += 1
@@ -92,17 +125,20 @@ final class SettlementPlannerModel: ObservableObject {
     func startComparison() {
         guard tested.count == SettlementMapData.sites.count else { return }
         phase = .comparing
-        recommendation = nil
-        selectedEvidence = []
+        placedSite = recommendation
+        prediction = recommendation.flatMap { tested[$0]?.prediction }
         hintIndex = 0
     }
 
     func recommend(_ siteID: SettlementSiteID) {
-        guard phase == .comparing else { return }
+        guard phase == .comparing, recommendation != siteID else { return }
         recommendation = siteID
         placedSite = siteID
         prediction = tested[siteID]?.prediction
         selectedEvidence = []
+        // A different site has a different event; revisiting the same site preserves its answer.
+        eventChoice = nil
+        eventRevealed = false
         hintIndex = 0
         successSignal += 1
     }
@@ -119,8 +155,8 @@ final class SettlementPlannerModel: ObservableObject {
     func continueToEvent() {
         guard phase == .comparing, recommendation != nil, selectedEvidence.count >= 2 else { return }
         phase = .event
-        eventChoice = nil
-        eventRevealed = false
+        placedSite = recommendation
+        prediction = recommendation.flatMap { tested[$0]?.prediction }
         hintIndex = 0
     }
 
@@ -280,7 +316,7 @@ final class SettlementPlannerModel: ObservableObject {
         }
 
         let phrases = selected.map { evidence -> String in
-            let text = evidence.text
+            let text = evidence.text.trimmingCharacters(in: CharacterSet(charactersIn: "."))
             guard let first = text.first else { return text }
             return first.lowercased() + text.dropFirst()
         }
@@ -295,7 +331,7 @@ final class SettlementPlannerModel: ObservableObject {
             joined = phrases.dropLast().joined(separator: ", ") + " and " + (phrases.last ?? "")
         }
 
-        return "I recommend \(site.id.title) because \(joined)"
+        return "I recommend \(site.id.title) because \(joined)."
     }
 
     // MARK: Guide text and hints
@@ -303,13 +339,13 @@ final class SettlementPlannerModel: ObservableObject {
     var defaultCatMessage: String {
         switch phase {
         case .brief:
-            "Three families need new homes. Read the map, then drag the homes onto one of the three sites."
+            "Help three families find a home. Test each site, explain your choice, then see how it handles a surprise event."
         case .placing:
-            "Look at the roads, river, steep land, farmland, school and market. Which site gives the best access?"
+            "Tap a site card below the map, or drag the homes onto a dashed site. Compare the roads, river and nearby services."
         case .predicting:
             "Before you test, predict the pattern. Will the homes form a line, a cluster or a scatter?"
         case .results:
-            "Check the evidence. Then test another site so you can compare all three."
+            "Read the results below. Each tested site is saved, so you can return to it while comparing your options."
         case .comparing:
             "Compare access, farmland and flood risk. Recommend one site and choose at least two pieces of map evidence."
         case .event:

@@ -66,10 +66,12 @@ private struct WelcomeHeading: View {
 }
 
 private struct WaterScene: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         GeometryReader { geometry in
-            TimelineView(.animation) { timeline in
-                let time = timeline.date.timeIntervalSinceReferenceDate
+            TimelineView(.animation(minimumInterval: 1.0 / 60, paused: reduceMotion)) { timeline in
+                let time = reduceMotion ? 0 : timeline.date.timeIntervalSinceReferenceDate
 
                 ZStack {
                     Wave(phase: time * 1.1, amplitude: 18, baseline: 0.66)
@@ -135,14 +137,17 @@ private struct Bubble: View {
 
     var body: some View {
         let diameter = CGFloat(5 + (index % 4) * 3)
-        let x = size.width * CGFloat((index * 37 % 97) + 2) / 100
+        let drift = CGFloat(sin(time * 1.2 + Double(index))) * 12
+        let x = size.width * CGFloat((index * 37 % 97) + 2) / 100 + drift
         let y = size.height * (1 - progress)
+        let opacity = min(progress * 8, (1 - progress) * 5)
 
         Circle()
-            .fill(.white.opacity(0.55))
+            .fill(.white.opacity(0.16))
             .overlay(Circle().stroke(.white.opacity(0.7), lineWidth: 1))
             .frame(width: diameter, height: diameter)
             .position(x: x, y: y)
+            .opacity(Double(opacity))
             .blur(radius: index.isMultiple(of: 3) ? 0.5 : 0)
     }
 }
