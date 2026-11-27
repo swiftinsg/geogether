@@ -1,24 +1,58 @@
 import SwiftUI
 
 struct MangrovesAndRainforestsView: View {
+    @State private var selectedPage = 0
+
+    var body: some View {
+        VStack(spacing: 0) {
+            TabView(selection: $selectedPage) {
+                MangroveLessonView()
+                    .tag(0)
+                RainforestLessonView()
+                    .tag(1)
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+
+            HStack {
+                Button("Previous", systemImage: "chevron.left") {
+                    selectedPage = 0
+                }
+                .disabled(selectedPage == 0)
+
+                Spacer(minLength: 8)
+
+                Text(selectedPage == 0 ? "Mangroves · 1 of 2" : "Rainforest · 2 of 2")
+                    .font(.subheadline)
+                    .multilineTextAlignment(.center)
+
+                Spacer(minLength: 8)
+
+                Button("Next", systemImage: "chevron.right") {
+                    selectedPage = 1
+                }
+                .disabled(selectedPage == 1)
+            }
+            .padding()
+            .background(.background)
+        }
+        .background(.green.opacity(0.07))
+        .navigationTitle("Mangroves and Rainforests")
+        .navigationBarTitleDisplayMode(.inline)
+        .tint(Color(red: 0.12, green: 0.42, blue: 0.29))
+    }
+}
+
+private struct MangroveLessonView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                Image("RainforestLayers")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxHeight: 340)
-                    .clipShape(RoundedRectangle(cornerRadius: 24))
-                    .accessibilityLabel("A tropical rainforest with low plants, a leafy canopy and tall emergent trees.")
-
-                Text("Mangroves and Rainforests")
+                Text("Mangroves")
                     .font(.largeTitle.bold())
                     .accessibilityAddTraits(.isHeader)
 
                 ForestLessonCard(title: "Learning objectives") {
                     Text("1. Describe the characteristics of mangroves.")
                     Text("2. Describe how mangroves adapt to their environment.")
-                    Text("3. Name the different layers of a rainforest.")
                 }
 
                 ForestLessonCard(title: "Characteristics of mangroves") {
@@ -40,20 +74,7 @@ struct MangrovesAndRainforestsView: View {
 
                 MangroveRootStudy()
 
-                ForestLessonCard(title: "Layers of a tropical rainforest") {
-                    Text("Emergent layer · High · 30 m and above")
-                    Text("Canopy layer · Middle · 20–30 m")
-                    Text("Undergrowth layer · Low · 0–20 m")
-                    NavigationLink {
-                        RainforestSimulationView()
-                    } label: {
-                        Label("Explore the rainforest simulation", systemImage: "sun.max.fill")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 8)
-                    }
-                    .buttonStyle(.borderedProminent)
-                }
+
 
             }
             .padding(24)
@@ -61,9 +82,33 @@ struct MangrovesAndRainforestsView: View {
             .frame(maxWidth: .infinity)
         }
         .background(.green.opacity(0.07))
-        .navigationTitle("Mangroves and Rainforests")
-        .navigationBarTitleDisplayMode(.inline)
-        .tint(Color(red: 0.12, green: 0.42, blue: 0.29))
+    }
+}
+
+private struct RainforestLessonView: View {
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                Text("Rainforest")
+                    .font(.largeTitle.bold())
+                    .accessibilityAddTraits(.isHeader)
+
+                ForestLessonCard(title: "Learning objective") {
+                    Text("Name the different layers of a rainforest.")
+                }
+
+                ForestLessonCard(title: "Layers of a tropical rainforest") {
+                    Text("Emergent layer · High · 30 m and above")
+                    Text("Canopy layer · Middle · 20–30 m")
+                    Text("Undergrowth layer · Low · 0–20 m")
+                }
+
+                RainforestSimulationView()
+            }
+            .padding(24)
+            .frame(maxWidth: 760)
+            .frame(maxWidth: .infinity)
+        }
     }
 }
 
@@ -248,49 +293,70 @@ private enum RainforestLayer: CaseIterable, Identifiable {
 }
 
 struct RainforestSimulationView: View {
-    @State private var selectedLayer: RainforestLayer = .undergrowth
+    @State private var layerPosition = 0.0
+
+    private var selectedLayer: RainforestLayer {
+        switch layerPosition {
+        case ..<0.5: .undergrowth
+        case ..<1.5: .canopy
+        default: .emergent
+        }
+    }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                Text("Explore the rainforest")
-                    .font(.largeTitle.bold())
-                    .accessibilityAddTraits(.isHeader)
-                Text("Choose a layer to discover its height, plants and sunlight.")
+        ForestLessonCard(title: "Explore the rainforest") {
+            Text("Drag the slider up to climb through the rainforest, or down to return to the forest floor.")
 
-                Picker("Rainforest layer", selection: $selectedLayer) {
-                    ForEach(RainforestLayer.allCases) { layer in
-                        Text(layer.title).tag(layer)
-                    }
-                }
-                .pickerStyle(.segmented)
-
+            HStack(alignment: .center, spacing: 12) {
                 RainforestLayerArtwork(layer: selectedLayer)
+                    .frame(maxWidth: .infinity)
 
-                ForestLessonCard(title: "Selected layer") {
-                    Text(selectedLayer.title)
-                        .font(.title.bold())
-                    Label {
-                        Text(selectedLayer.height)
-                    } icon: {
-                        Image(systemName: "arrow.up.and.down")
-                    }
-                    .font(.headline)
-                    Label {
-                        Text(selectedLayer.sunlight)
-                    } icon: {
-                        Image(systemName: "sun.max.fill")
-                    }
-                    Text(selectedLayer.detail)
-                }
+                RainforestVerticalSlider(position: $layerPosition, layer: selectedLayer)
             }
-            .padding(24)
-            .frame(maxWidth: 760)
-            .frame(maxWidth: .infinity)
+
+            Text(selectedLayer.title)
+                .font(.title.bold())
+                .accessibilityAddTraits(.isHeader)
+            Label {
+                Text(selectedLayer.height)
+            } icon: {
+                Image(systemName: "arrow.up.and.down")
+            }
+            .font(.headline)
+            Label {
+                Text(selectedLayer.sunlight)
+            } icon: {
+                Image(systemName: "sun.max.fill")
+            }
+            Text(selectedLayer.detail)
         }
-        .background(.green.opacity(0.07))
-        .navigationTitle("Rainforest simulation")
-        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+private struct RainforestVerticalSlider: View {
+    @Binding var position: Double
+    let layer: RainforestLayer
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "sun.max.fill")
+                .accessibilityHidden(true)
+
+            // Rotating the native slider keeps its adjustable accessibility behavior.
+            // A second frame reserves the rotated dimensions in the surrounding layout.
+            Slider(value: $position, in: 0...2, step: 1) {
+                Text("Rainforest layer")
+            }
+            .frame(width: 220, height: 44)
+            .rotationEffect(.degrees(-90))
+            .frame(width: 44, height: 220)
+            .environment(\.layoutDirection, .leftToRight)
+            .accessibilityValue(Text(layer.title))
+            .accessibilityHint("Adjust upwards for higher layers and downwards for lower layers.")
+
+            Image(systemName: "leaf.fill")
+                .accessibilityHidden(true)
+        }
     }
 }
 

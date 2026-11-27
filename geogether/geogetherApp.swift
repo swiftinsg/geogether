@@ -11,9 +11,7 @@ import SwiftUI
 struct geogetherApp: App {
     var body: some Scene {
         WindowGroup {
-            GlobeTouchView {
-                ContentView()
-            }
+            ContentView()
         }
     }
 }
